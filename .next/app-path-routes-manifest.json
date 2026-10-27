@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/album/[id]/page": "/album/[id]",
+  "/album/page": "/album",
+  "/equalizer/page": "/equalizer",
+  "/favorites/page": "/favorites",
+  "/lyrics/page": "/lyrics",
+  "/page": "/",
+  "/player/page": "/player",
+  "/search/page": "/search"
+}

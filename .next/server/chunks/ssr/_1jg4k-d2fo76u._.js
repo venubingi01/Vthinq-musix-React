@@ -1,0 +1,3 @@
+(()=>{"use strict";module.exports=[8311,a=>{var b=a.i(64831);let c={name:"clock",size:24,node:[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"M12 6v6l4 2",key:"mmk7yg"}]]};c.node;let d=(0,b.f)(c);a.s(["f",0,d],8311)},46042,a=>{var b=a.i(87924),c=a.i(50944),d=a.i(86042);a.s(["default",0,function(){let a=(0,c.useParams)(),e=Array.isArray(a?.id)?a.id[0]:a?.id||"alb_ala_vaikunthapurramuloo";return(0,b.jsx)(d.f,{albumId:e})}])}]})();
+
+//# sourceMappingURL=_1jg4k-d2fo76u._.js.map
