@@ -1338,7 +1338,7 @@ input:checked+.toggle-slider:before {
   height: var(--player-height);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--glass-border);
-  z-index: 50;
+  z-index: 500;
   background: #0e1220eb;
   flex-direction: column;
   display: flex;

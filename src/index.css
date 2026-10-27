@@ -1612,7 +1612,7 @@ input:checked+.toggle-slider:before {
   height: var(--bottom-nav-height);
   background: var(--bg-primary);
   border-top: 1px solid var(--glass-border);
-  z-index: 60;
+  z-index: 600;
 }
 
 .bottom-nav-inner {
@@ -3659,7 +3659,6 @@ input:checked+.toggle-slider:before {
   }
 
   .progress-seek-wrapper {
-    top: -3px;
     height: 4px;
   }
 
@@ -4395,6 +4394,7 @@ input:checked+.toggle-slider:before {
 
 /* Extra small mobile devices (<= 480px) */
 @media (max-width: 480px) {
+
   /* 1. Global Viewport & Shell */
   :root {
     --player-height: 60px;
@@ -6123,9 +6123,12 @@ input:checked+.toggle-slider:before {
 }
 
 @keyframes heartPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.22);
   }
