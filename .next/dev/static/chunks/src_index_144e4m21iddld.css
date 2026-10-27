@@ -1981,6 +1981,7 @@ input:checked+.toggle-slider:before {
   position: absolute;
   inset: 0;
   transform: scale(1.15);
+  display: none;
 }
 
 .player-empty-state {
@@ -3572,7 +3573,6 @@ input:checked+.toggle-slider:before {
 
   .progress-seek-wrapper {
     height: 4px;
-    top: -3px;
   }
 
   .progress-seek-slider {
@@ -3912,6 +3912,7 @@ input:checked+.toggle-slider:before {
     font-size: .62rem;
     bottom: 6px;
     left: 6px;
+    top: auto;
   }
 
   .album-card-play-overlay {
