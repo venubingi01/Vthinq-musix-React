@@ -723,7 +723,7 @@ export const FullscreenVisualizer: React.FC = () => {
                   textShadow: `0 0 24px ${currentTheme.primary}, 0 0 50px ${currentTheme.secondary}`
                 }}
               >
-                <span className="active-lyric-glow-text">♪ {currentSong?.name || 'Sangeetham Music'} ♪</span>
+                <span className="active-lyric-glow-text">{currentSong?.name}</span>
               </div>
             )}
 

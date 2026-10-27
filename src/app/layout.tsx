@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '../index.css';
 import { MusicProvider } from '../context/MusicContext';
 import { Navbar } from '../components/Navbar';
@@ -9,10 +9,24 @@ import { AIChatModal } from '../components/AIChatModal';
 import { ShareModal } from '../components/ShareModal';
 import { Toast } from '../components/Toast';
 import { FullscreenVisualizer } from '../components/FullscreenVisualizer';
+import { PWAProvider } from '../components/PWAProvider';
+import { Footer } from '../components/Footer';
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0c',
+  width: 'device-width',
+  initialScale: 1
+};
 
 export const metadata: Metadata = {
   title: 'Sangeetham - AI Music Player',
   description: 'Sangeetham - AI Music Player with real-time synced lyrics, equalizer, and beat visualizer',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Sangeetham'
+  },
   icons: {
     icon: '/icon-192.png',
     apple: '/icon-192.png'
@@ -41,7 +55,10 @@ export default function RootLayout({
             <Navbar />
 
             {/* Dynamic Routed Page Content */}
-            <main className="main-viewport">{children}</main>
+            <main className="main-viewport">
+              {children}
+              <Footer />
+            </main>
 
             {/* Floating Global AI Music Assistant */}
             <AIChatModal />
@@ -49,6 +66,7 @@ export default function RootLayout({
             {/* Universal Share Modal & Toast Feedback */}
             <ShareModal />
             <Toast />
+            <PWAProvider />
 
             {/* Immersive Audio-Reactive Particle Fullscreen Visualizer */}
             <FullscreenVisualizer />

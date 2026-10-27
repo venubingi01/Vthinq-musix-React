@@ -248,7 +248,6 @@ export const PlayerView: React.FC = () => {
         <div className="player-visualizer-stage-box">
           <LyricalVisualizer
             lyrics={lyrics}
-            videoId={videoId}
             showMediaCard={true}
             onToggleFullscreen={openFullscreenVisualizer}
           />
@@ -257,7 +256,7 @@ export const PlayerView: React.FC = () => {
               <button
                 className="canvas-mode-btn active"
                 onClick={() => setVideoMode('visualizer')}
-                title="Audio Visualizer & Synced Lyrics Video"
+                title="Audio Visualizer & Synced Lyrics"
               >
                 <Sparkles size={14} />
                 <span>Visualizer</span>
@@ -265,10 +264,10 @@ export const PlayerView: React.FC = () => {
               <button
                 className="canvas-mode-btn"
                 onClick={() => setVideoMode('canvas')}
-                title="Spotify Canvas Video Mode"
+                title="Video Song Mode"
               >
                 <Video size={14} />
-                <span>Canvas Video</span>
+                <span>Video Song</span>
               </button>
               <button
                 className="canvas-mode-btn"
@@ -295,14 +294,6 @@ export const PlayerView: React.FC = () => {
               <span className="hd-studio-badge">
                 <Zap size={13} /> ULTRA HD 320kbps
               </span>
-              <div
-                className="mini-visualizer-wrap"
-                onClick={openFullscreenVisualizer}
-                title="Open Fullscreen Visualizer"
-                style={{ cursor: 'pointer' }}
-              >
-                <Visualizer height={20} />
-              </div>
             </div>
 
             {/* Quick Action Toolbar */}
@@ -401,7 +392,7 @@ export const PlayerView: React.FC = () => {
                   <button
                     className="canvas-mode-btn"
                     onClick={() => setVideoMode('visualizer')}
-                    title="Audio Visualizer & Synced Lyrics Video"
+                    title="Audio Visualizer & Synced Lyrics"
                   >
                     <Sparkles size={14} />
                     <span>Visualizer</span>
@@ -409,10 +400,10 @@ export const PlayerView: React.FC = () => {
                   <button
                     className={`canvas-mode-btn ${videoMode === 'canvas' ? 'active' : ''}`}
                     onClick={() => setVideoMode('canvas')}
-                    title="Spotify Canvas Video Mode"
+                    title="Video Song Mode"
                   >
                     <Video size={14} />
-                    <span>Canvas Video</span>
+                    <span>Video Song</span>
                   </button>
                   <button
                     className={`canvas-mode-btn ${videoMode === 'cover' ? 'active' : ''}`}
@@ -542,8 +533,9 @@ export const PlayerView: React.FC = () => {
               </div>
             ) : lyrics.length === 0 ? (
               <div className="lyrics-empty-placeholder">
-                <Quote size={38} className="text-muted" />
-                <p>Lyrics not available for this track.</p>
+                <p className="lyrics-empty-title">{currentSong?.name}</p>
+                {currentSong?.artist && <p className="lyrics-empty-artist">{currentSong.artist}</p>}
+                <p className="lyrics-empty-notice">Lyrics not available for this track</p>
               </div>
             ) : (
               <div className="lyrics-scroll-box">

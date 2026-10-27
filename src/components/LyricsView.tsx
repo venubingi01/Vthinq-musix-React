@@ -89,8 +89,9 @@ export const LyricsView: React.FC = () => {
           </div>
         ) : lyrics.length === 0 ? (
           <div className="lyrics-not-found">
-            <Quote size={40} className="text-muted" />
-            <p>Lyrics not available for this track.</p>
+            <h3 className="lyrics-empty-title">{currentSong?.name}</h3>
+            {currentSong?.artist && <p className="lyrics-empty-artist">{currentSong.artist}</p>}
+            <p className="lyrics-empty-notice">Lyrics not available for this track.</p>
           </div>
         ) : (
           <div className="lyrics-lines-scroll">

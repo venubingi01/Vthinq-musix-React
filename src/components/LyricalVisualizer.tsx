@@ -3,17 +3,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useMusic } from '../context/MusicContext';
 import { fetchLyrics } from '../services/lyricsService';
-import { searchMusicVideo } from '../services/videoService';
 import type { TimedLyric } from '../types/music';
 import {
   Sparkles,
   Maximize2,
   Minimize2,
   Palette,
-  Quote,
-  Loader2,
-  Video,
-  Image as ImageIcon
+  Loader2
 } from 'lucide-react';
 
 export type LyricalThemeKey = 'noir' | 'lightgrey' | 'silver';
@@ -102,7 +98,6 @@ interface LyricalVisualizerProps {
 
 export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
   lyrics: propLyrics,
-  videoId: propVideoId,
   showMediaCard = true,
   isFullscreen = false,
   onToggleFullscreen,
@@ -120,43 +115,6 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
 
   const [currentThemeKey, setCurrentThemeKey] = useState<LyricalThemeKey>(initialTheme);
   const theme = LYRICAL_THEMES[currentThemeKey];
-
-  // Video ID state
-  const [internalVideoId, setInternalVideoId] = useState<string | null>(propVideoId ?? null);
-  const [mediaView, setMediaView] = useState<'video' | 'cover'>('video');
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-
-  useEffect(() => {
-    if (propVideoId !== undefined) {
-      setInternalVideoId(propVideoId);
-      return;
-    }
-    if (!currentSong) return;
-    let isMounted = true;
-    searchMusicVideo(currentSong.id, currentSong.name, currentSong.artist)
-      .then((id) => {
-        if (isMounted) setInternalVideoId(id);
-      })
-      .catch(() => { });
-    return () => {
-      isMounted = false;
-    };
-  }, [currentSong?.id, propVideoId]);
-
-  // Sync canvas video with audio play/pause
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe || !iframe.contentWindow) return;
-    try {
-      const command = isPlaying ? 'playVideo' : 'pauseVideo';
-      iframe.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: command, args: [] }),
-        '*'
-      );
-    } catch {
-      // ignore
-    }
-  }, [isPlaying]);
 
   // Synced lyrics fetching
   const [lyricsList, setLyricsList] = useState<TimedLyric[]>(propLyrics || []);
@@ -383,10 +341,6 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
     }
   };
 
-  const canvasEmbedUrl = internalVideoId
-    ? `https://www.youtube-nocookie.com/embed/${internalVideoId}?autoplay=${isPlaying ? '1' : '0'}&mute=1&controls=0&loop=1&playlist=${internalVideoId}&playsinline=1&modestbranding=1&rel=0&enablejsapi=1`
-    : '';
-
   return (
     <div
       ref={containerRef}
@@ -445,71 +399,63 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
 
       {/* 3. Main Stage: Left 9:16 Portrait Canvas + Right Multi-line Synced Lyrics */}
       <div className="lyrical-main-stage">
-        {/* Left Side: 9:16 Portrait Canvas Video / Album Cover Card */}
+        {/* Left Side: 9:16 Portrait Album Cover Card */}
         {showMediaCard && currentSong && (
           <div className="lyrical-portrait-column">
             <div className="lyrical-portrait-card">
-              {mediaView === 'video' && internalVideoId ? (
-                <div className="portrait-video-box">
-                  <iframe
-                    ref={iframeRef}
-                    src={canvasEmbedUrl}
-                    title="Portrait Canvas Video"
-                    className="portrait-iframe"
-                    allow="autoplay; encrypted-media"
-                  />
-                  <div className="portrait-gradient-overlay" />
-                </div>
-              ) : (
-                <div
-                  className="portrait-cover-box"
-                  style={{ backgroundImage: `url(${currentSong.image})` }}
-                >
-                  <img
-                    src={currentSong.image}
-                    alt={currentSong.name}
-                    className="portrait-cover-img"
-                  />
-                </div>
-              )}
+              <div
+                className="portrait-cover-box"
+                style={{ backgroundImage: `url(${currentSong.image})` }}
+              >
+                <img
+                  src={currentSong.image}
+                  alt={currentSong.name}
+                  className="portrait-cover-img"
+                />
+              </div>
 
-              {/* Card Top Badges / Toggles */}
+              {/* Card Top Badges */}
               <div className="portrait-badges-overlay">
                 <span className="portrait-status-pill">
-                  ✦ CENTER
+                  ✦ COVER ART
                 </span>
-                {internalVideoId && (
-                  <button
-                    type="button"
-                    className="portrait-toggle-pill"
-                    onClick={() => setMediaView(mediaView === 'video' ? 'cover' : 'video')}
-                    title="Switch Video / Cover"
-                  >
-                    {mediaView === 'video' ? <ImageIcon size={11} /> : <Video size={11} />}
-                    <span>{mediaView === 'video' ? 'Cover' : 'Video'}</span>
-                  </button>
-                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Right Side: Multi-line Synced Lyrics Video Display */}
+        {/* Right Side: Multi-line Synced Lyrics Display */}
         <div className="lyrical-lyrics-column">
           {isLoadingLyrics ? (
             <div className="lyrical-loading-box">
               <Loader2 size={32} className="spin-loader" style={{ color: theme.activeTextColor }} />
-              <p style={{ color: theme.activeTextColor }}>Syncing lyrical video...</p>
+              <p style={{ color: theme.activeTextColor }}>Syncing lyrics...</p>
             </div>
           ) : lyricsList.length === 0 ? (
-            <div className="lyrical-loading-box">
-              <Quote size={36} style={{ color: theme.inactiveTextColor }} />
-              <p className="empty-title" style={{ color: theme.activeTextColor }}>
-                {currentSong?.name}
-              </p>
-              <p className="empty-subtitle" style={{ color: theme.inactiveTextColor }}>
-                {currentSong?.artist}
-              </p>
+            <div className="lyrical-lyrics-stack">
+              <div
+                className="lyrical-line lyrical-active-line"
+                style={{
+                  color: theme.activeTextColor,
+                  textShadow: theme.textGlow
+                }}
+              >
+                <span className="active-lyric-glow-text">{currentSong?.name}</span>
+              </div>
+              {currentSong?.artist && (
+                <div
+                  className="lyrical-line"
+                  style={{
+                    color: theme.inactiveTextColor,
+                    opacity: 0.55,
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    textShadow: 'none'
+                  }}
+                >
+                  <span>{currentSong.artist}</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="lyrical-lyrics-stack">
@@ -555,7 +501,7 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
                     textShadow: theme.textGlow
                   }}
                 >
-                  <span className="active-lyric-glow-text">♪ {currentSong?.name || 'Sangeetham Music'} ♪</span>
+                  <span className="active-lyric-glow-text">{currentSong?.name}</span>
                 </div>
               )}
 

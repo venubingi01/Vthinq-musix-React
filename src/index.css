@@ -5374,6 +5374,43 @@ input:checked+.toggle-slider:before {
   margin: 0;
 }
 
+.lyrics-empty-placeholder,
+.lyrics-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  text-align: center;
+  gap: 8px;
+  padding: 32px 16px;
+}
+
+.lyrics-empty-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.75), 0 0 40px rgba(255, 255, 255, 0.35);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.lyrics-empty-artist {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  text-shadow: none;
+}
+
+.lyrics-empty-notice {
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 8px;
+  text-shadow: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 868px) {
   .lyrical-main-stage {
@@ -5423,7 +5460,7 @@ input:checked+.toggle-slider:before {
 
 .visualizer-stage-mode-bar {
   position: absolute;
-  top: 14px;
+  top: 54px;
   right: 80px;
   z-index: 20;
 }
@@ -5446,4 +5483,85 @@ input:checked+.toggle-slider:before {
 
 .fs-stack .lyrical-line {
   text-align: center;
+}
+
+/* App Footer Creator Credit */
+.app-footer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 40px auto 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(10px);
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.25s ease;
+}
+
+.footer-content:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 106, 0, 0.35);
+  box-shadow: 0 4px 20px rgba(255, 106, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.footer-code-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent-orange, #ff6a00);
+  background: rgba(255, 106, 0, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: -0.5px;
+}
+
+.footer-text {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-heart {
+  display: inline-block;
+  animation: heartPulse 1.8s ease-in-out infinite;
+  margin: 0 2px;
+}
+
+@keyframes heartPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.22);
+  }
+}
+
+.footer-author-link {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: opacity 0.2s ease;
+  position: relative;
+}
+
+.footer-author-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+  text-decoration-color: #ff6a00;
 }
