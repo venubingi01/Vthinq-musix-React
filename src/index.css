@@ -4042,6 +4042,7 @@ input:checked+.toggle-slider:before {
     padding: 2px 6px;
     bottom: 6px;
     left: 6px;
+    top: auto;
   }
 
   .album-card-play-overlay {
@@ -4609,6 +4610,7 @@ input:checked+.toggle-slider:before {
     padding: 2px 5px;
     bottom: 4px;
     left: 4px;
+    top: auto;
   }
 
   .album-card-play-overlay {
