@@ -1,12 +1,12 @@
 [
   {
     "route": "/lyrics",
-    "firstLoadUncompressedJsBytes": 563854,
+    "firstLoadUncompressedJsBytes": 563767,
     "firstLoadChunkPaths": [
       ".next/static/chunks/43cmndj9ez-js.js",
       ".next/static/chunks/3vk1wpfbczb98.js",
       ".next/static/chunks/0-4l7oiobxvqx.js",
-      ".next/static/chunks/1jq06row-2mmy.js",
+      ".next/static/chunks/1dfz9-280xlsm.js",
       ".next/static/chunks/1x6obpmlu1_c2.js",
       ".next/static/chunks/2r4s4h5xul1n-.js",
       ".next/static/chunks/41cspuqx5kxkm.js",
@@ -16,12 +16,12 @@
   },
   {
     "route": "/player",
-    "firstLoadUncompressedJsBytes": 563854,
+    "firstLoadUncompressedJsBytes": 563767,
     "firstLoadChunkPaths": [
       ".next/static/chunks/43cmndj9ez-js.js",
       ".next/static/chunks/3vk1wpfbczb98.js",
       ".next/static/chunks/0-4l7oiobxvqx.js",
-      ".next/static/chunks/1o6ftxtkhpoa-.js",
+      ".next/static/chunks/1r-5uyyforb0n.js",
       ".next/static/chunks/1x6obpmlu1_c2.js",
       ".next/static/chunks/2r4s4h5xul1n-.js",
       ".next/static/chunks/41cspuqx5kxkm.js",

@@ -416,9 +416,9 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
 
               {/* Card Top Badges */}
               <div className="portrait-badges-overlay">
-                <span className="portrait-status-pill">
+                {/* <span className="portrait-status-pill">
                   ✦ COVER ART
-                </span>
+                </span> */}
               </div>
             </div>
           </div>

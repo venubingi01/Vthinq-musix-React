@@ -2019,7 +2019,7 @@ input:checked+.toggle-slider:before {
    ========================================================================== */
 .player-view-wrapper {
   position: relative;
-  min-height: calc(100vh - 230px);
+  min-height: calc(100vh - 350px);
   padding: 0 0 20px 0;
 }
 
@@ -4056,7 +4056,7 @@ input:checked+.toggle-slider:before {
   .player-view-wrapper {
     padding: 12px 10px;
     border-radius: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 0px;
     min-height: auto;
   }
 
@@ -4462,7 +4462,6 @@ input:checked+.toggle-slider:before {
 
   .brand-logo .logo-badge {
     font-size: 0.5rem;
-    display: none;
   }
 
   .header-actions {
@@ -4775,7 +4774,7 @@ input:checked+.toggle-slider:before {
   }
 
   .lyrical-portrait-card {
-    width: 130px !important;
+    width: 100% !important;
     height: 185px !important;
     border-radius: 12px !important;
   }
@@ -4871,10 +4870,11 @@ input:checked+.toggle-slider:before {
   }
 
   .canvas-top-bar {
-    padding: 5px;
-    gap: 4px;
-    flex-wrap: wrap;
     justify-content: center;
+    gap: 4px;
+    padding: 2px;
+    top: auto;
+    bottom: 0px;
   }
 
   .canvas-fs-btn {
@@ -6123,7 +6123,7 @@ input:checked+.toggle-slider:before {
 .app-footer {
   width: 100%;
   max-width: 1200px;
-  margin: 40px auto 16px;
+  margin: 10px auto 16px;
   padding: 16px 20px;
   display: flex;
   align-items: center;
