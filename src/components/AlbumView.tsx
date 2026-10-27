@@ -14,7 +14,8 @@ import {
   Clock,
   Loader2,
   Music2,
-  Share2
+  Share2,
+  Radio
 } from 'lucide-react';
 
 // Format seconds to mm:ss
@@ -102,6 +103,10 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
     });
   };
 
+  const isPlaylist =
+    album.artists?.toLowerCase().includes('curated') ||
+    album.artists?.toLowerCase().includes('playlist');
+
   return (
     <div className="album-view-container">
       {/* Top Back Navigation Bar */}
@@ -112,12 +117,12 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
         </Link>
 
         <Link
-          href="/search?tab=albums"
+          href={isPlaylist ? '/search?tab=charts' : '/search?tab=albums'}
           className="album-back-btn"
           style={{ textDecoration: 'none', background: 'rgba(255, 255, 255, 0.08)' }}
         >
-          <Disc size={16} />
-          <span>Browse All Albums</span>
+          {isPlaylist ? <Radio size={16} /> : <Disc size={16} />}
+          <span>{isPlaylist ? 'Browse Charts & Playlists' : 'Browse All Albums'}</span>
         </Link>
       </div>
 
@@ -131,7 +136,15 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
 
         <div className="album-meta-details">
           <span className="album-pill-badge">
-            <Disc size={14} /> ALBUM
+            {isPlaylist ? (
+              <>
+                <Radio size={14} /> PLAYLIST COLLECTION
+              </>
+            ) : (
+              <>
+                <Disc size={14} /> ALBUM
+              </>
+            )}
           </span>
           <h1 className="album-title-text">{album.title}</h1>
           <p className="album-artists-text">{album.artists}</p>

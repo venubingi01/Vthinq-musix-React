@@ -19,10 +19,11 @@ import {
   Shuffle,
   Zap,
   Layers,
-  Radio
+  Radio,
+  AlignLeft
 } from 'lucide-react';
 
-import { fetchLyrics } from '../services/lyricsService';
+import { fetchLyrics, isPlainLyrics } from '../services/lyricsService';
 import type { TimedLyric } from '../types/music';
 
 type VisualizerMode = 'lyrics' | 'burst' | 'galaxy' | 'radial' | 'wave';
@@ -157,17 +158,20 @@ export const FullscreenVisualizer: React.FC = () => {
     };
   }, [currentSong?.id]);
 
+  const isPlain = isPlainLyrics(lyrics);
   let activeIndex = -1;
-  for (let i = lyrics.length - 1; i >= 0; i--) {
-    if (currentTime >= lyrics[i].time) {
-      activeIndex = i;
-      break;
+  if (!isPlain) {
+    for (let i = lyrics.length - 1; i >= 0; i--) {
+      if (currentTime >= lyrics[i].time) {
+        activeIndex = i;
+        break;
+      }
     }
   }
 
-  const pastLines = activeIndex > 0 ? lyrics.slice(Math.max(0, activeIndex - 4), activeIndex) : [];
-  const activeLyric = activeIndex >= 0 ? lyrics[activeIndex] : null;
-  const futureLines = activeIndex >= 0 ? lyrics.slice(activeIndex + 1, Math.min(lyrics.length, activeIndex + 4)) : lyrics.slice(0, 3);
+  const pastLines = !isPlain && activeIndex > 0 ? lyrics.slice(Math.max(0, activeIndex - 4), activeIndex) : [];
+  const activeLyric = !isPlain && activeIndex >= 0 ? lyrics[activeIndex] : null;
+  const futureLines = !isPlain ? (activeIndex >= 0 ? lyrics.slice(activeIndex + 1, Math.min(lyrics.length, activeIndex + 4)) : lyrics.slice(0, 3)) : [];
 
   // Reset controls hide timer on interaction
   const handleUserActivity = useCallback(() => {
@@ -680,72 +684,103 @@ export const FullscreenVisualizer: React.FC = () => {
             </div>
           )}
 
-          <div className="lyrical-lyrics-stack fs-stack">
-            {/* Past Lines */}
-            {pastLines.map((line, pIdx) => {
-              const distance = pastLines.length - pIdx;
-              const opacity = Math.max(0.2, 0.65 - distance * 0.12);
-              return (
-                <div
-                  key={`fs-past-${line.time}-${pIdx}`}
-                  className="lyrical-line lyrical-past-line"
-                  onClick={() => seek(line.time)}
+          {isPlain ? (
+            <div className="fs-plain-lyrics-container">
+              <div className="fs-plain-lyrics-header">
+                <span
+                  className="fs-plain-badge"
                   style={{
-                    color: currentTheme.secondary,
-                    opacity
+                    borderColor: `${currentTheme.primary}40`,
+                    color: currentTheme.primary
                   }}
-                  title="Click to seek back"
                 >
-                  <span className="lyric-text">{line.text}</span>
-                </div>
-              );
-            })}
-
-            {/* ACTIVE LINE */}
-            {activeLyric ? (
-              <div
-                key={`fs-active-${activeIndex}`}
-                className="lyrical-line lyrical-active-line"
-                onClick={() => seek(activeLyric.time)}
-                style={{
-                  color: currentTheme.primary,
-                  textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}40`
-                }}
-                title="Currently playing"
-              >
-                <span className="active-lyric-glow-text">{activeLyric.text}</span>
+                  <AlignLeft size={13} />
+                  Plain Lyrics
+                </span>
               </div>
-            ) : (
-              <div
-                className="lyrical-line lyrical-active-line intro"
-                style={{
-                  color: currentTheme.primary,
-                  textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}40`
-                }}
-              >
-                <span className="active-lyric-glow-text">{currentSong?.name}</span>
+              <div className="fs-plain-lyrics-scroll custom-scrollbar">
+                {lyrics.map((line, idx) => (
+                  <p
+                    key={`fs-plain-${idx}`}
+                    className="fs-plain-line"
+                    style={{
+                      color: currentTheme.primary,
+                      textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}30`
+                    }}
+                  >
+                    {line.text}
+                  </p>
+                ))}
               </div>
-            )}
+            </div>
+          ) : (
+            <div className="lyrical-lyrics-stack fs-stack">
+              {/* Past Lines */}
+              {pastLines.map((line, pIdx) => {
+                const distance = pastLines.length - pIdx;
+                const opacity = Math.max(0.2, 0.65 - distance * 0.12);
+                return (
+                  <div
+                    key={`fs-past-${line.time}-${pIdx}`}
+                    className="lyrical-line lyrical-past-line"
+                    onClick={() => seek(line.time)}
+                    style={{
+                      color: currentTheme.secondary,
+                      opacity
+                    }}
+                    title="Click to seek back"
+                  >
+                    <span className="lyric-text">{line.text}</span>
+                  </div>
+                );
+              })}
 
-            {/* Future Lines */}
-            {futureLines.map((line, fIdx) => {
-              const opacity = Math.max(0.18, 0.45 - fIdx * 0.12);
-              return (
+              {/* ACTIVE LINE */}
+              {activeLyric ? (
                 <div
-                  key={`fs-future-${line.time}-${fIdx}`}
-                  className="lyrical-line lyrical-future-line"
-                  onClick={() => seek(line.time)}
+                  key={`fs-active-${activeIndex}`}
+                  className="lyrical-line lyrical-active-line"
+                  onClick={() => seek(activeLyric.time)}
                   style={{
-                    color: currentTheme.secondary,
-                    opacity
+                    color: currentTheme.primary,
+                    textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}40`
                   }}
-                  title="Click to jump forward"
+                  title="Currently playing"
                 >
-                  <span className="lyric-text">{line.text}</span>
+                  <span className="active-lyric-glow-text">{activeLyric.text}</span>
                 </div>
-              );
-            })}
-          </div>
+              ) : (
+                <div
+                  className="lyrical-line lyrical-active-line intro"
+                  style={{
+                    color: currentTheme.primary,
+                    textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}40`
+                  }}
+                >
+                  <span className="active-lyric-glow-text">{currentSong?.name}</span>
+                </div>
+              )}
+
+              {/* Future Lines */}
+              {futureLines.map((line, fIdx) => {
+                const opacity = Math.max(0.18, 0.45 - fIdx * 0.12);
+                return (
+                  <div
+                    key={`fs-future-${line.time}-${fIdx}`}
+                    className="lyrical-line lyrical-future-line"
+                    onClick={() => seek(line.time)}
+                    style={{
+                      color: currentTheme.secondary,
+                      opacity
+                    }}
+                    title="Click to jump forward"
+                  >
+                    <span className="lyric-text">{line.text}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : (
         <div className="fs-center-orb-wrapper" style={{ pointerEvents: 'none' }}>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMusic } from '../context/MusicContext';
-import { fetchLyrics } from '../services/lyricsService';
+import { fetchLyrics, isPlainLyrics } from '../services/lyricsService';
 import type { TimedLyric } from '../types/music';
-import { Quote, Loader2, Music2 } from 'lucide-react';
+import { Quote, Loader2, Music2, AlignLeft } from 'lucide-react';
 
 export const LyricsView: React.FC = () => {
   const { currentSong, currentTime, seek } = useMusic();
@@ -35,24 +35,28 @@ export const LyricsView: React.FC = () => {
     };
   }, [currentSong?.id]);
 
-  // Find index of currently active lyric line matching playback currentTime
+  const isPlain = isPlainLyrics(lyrics);
+
+  // Find index of currently active lyric line matching playback currentTime (only for synced lyrics)
   let activeIndex = -1;
-  for (let i = lyrics.length - 1; i >= 0; i--) {
-    if (currentTime >= lyrics[i].time) {
-      activeIndex = i;
-      break;
+  if (!isPlain) {
+    for (let i = lyrics.length - 1; i >= 0; i--) {
+      if (currentTime >= lyrics[i].time) {
+        activeIndex = i;
+        break;
+      }
     }
   }
 
-  // Smoothly autoscroll the active line into center view
+  // Smoothly autoscroll the active line into center view (only for synced lyrics)
   useEffect(() => {
-    if (activeLineRef.current) {
+    if (!isPlain && activeLineRef.current) {
       activeLineRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, isPlain]);
 
   if (!currentSong) {
     return (
@@ -92,6 +96,18 @@ export const LyricsView: React.FC = () => {
             <h3 className="lyrics-empty-title">{currentSong?.name}</h3>
             {currentSong?.artist && <p className="lyrics-empty-artist">{currentSong.artist}</p>}
             <p className="lyrics-empty-notice">Lyrics not available for this track.</p>
+          </div>
+        ) : isPlain ? (
+          <div className="lyrics-plain-scroll-box custom-scrollbar">
+            <div className="lyrics-plain-tag">
+              <AlignLeft size={14} />
+              <span>Plain Lyrics</span>
+            </div>
+            {lyrics.map((line, index) => (
+              <p key={`lv-plain-${index}`} className="lyrics-plain-line">
+                {line.text}
+              </p>
+            ))}
           </div>
         ) : (
           <div className="lyrics-lines-scroll">

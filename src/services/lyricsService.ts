@@ -91,7 +91,7 @@ async function fetchFromLrcLib(cleanTitleStr: string, primaryArtist: string, sec
         if (parsed.length > 0) return parsed;
       } else if (data?.plainLyrics) {
         const lines = data.plainLyrics.split("\n").filter((l: string) => l.trim().length > 0);
-        return lines.map((text: string, idx: number) => ({ time: idx * 4, text }));
+        return lines.map((text: string, idx: number) => ({ time: idx * 4, text, isPlain: true }));
       }
     }
   } catch {}
@@ -110,7 +110,7 @@ async function fetchFromLrcLib(cleanTitleStr: string, primaryArtist: string, sec
           if (parsed.length > 0) return parsed;
         } else if (data2?.plainLyrics) {
           const lines = data2.plainLyrics.split("\n").filter((l: string) => l.trim().length > 0);
-          return lines.map((text: string, idx: number) => ({ time: idx * 4, text }));
+          return lines.map((text: string, idx: number) => ({ time: idx * 4, text, isPlain: true }));
         }
       }
     } catch {}
@@ -129,7 +129,7 @@ async function fetchFromLrcLib(cleanTitleStr: string, primaryArtist: string, sec
           if (parsed.length > 0) return parsed;
         } else if (best?.plainLyrics) {
           const lines = best.plainLyrics.split("\n").filter((l: string) => l.trim().length > 0);
-          return lines.map((text: string, idx: number) => ({ time: idx * 4, text }));
+          return lines.map((text: string, idx: number) => ({ time: idx * 4, text, isPlain: true }));
         }
       }
     }
@@ -157,6 +157,10 @@ async function fetchFromRender(cleanTitleStr: string, artistStr: string): Promis
         } else if (data.data.lyrics) {
           const parsed = parseLrc(data.data.lyrics);
           if (parsed.length > 0) return parsed;
+          const lines = data.data.lyrics.split("\n").filter((l: string) => l.trim().length > 0);
+          if (lines.length > 0) {
+            return lines.map((text: string, idx: number) => ({ time: idx * 4, text, isPlain: true }));
+          }
         }
       }
     }
@@ -170,7 +174,7 @@ async function fetchFromRender(cleanTitleStr: string, artistStr: string): Promis
       const dataPlain = await resPlain.json();
       if (dataPlain?.status === "success" && dataPlain.data?.lyrics) {
         const lines = dataPlain.data.lyrics.split("\n").filter((l: string) => l.trim().length > 0);
-        return lines.map((text: string, idx: number) => ({ time: idx * 4, text }));
+        return lines.map((text: string, idx: number) => ({ time: idx * 4, text, isPlain: true }));
       }
     }
   } catch {}
@@ -226,7 +230,7 @@ export async function fetchLyrics(trackName: string, artistName: string): Promis
               }
             } else if (matched?.plainLyrics) {
               const lines = matched.plainLyrics.split("\n").filter((l: string) => l.trim().length > 0);
-              const mapped = lines.map((text: string, idx: number) => ({ time: idx * 4, text }));
+              const mapped = lines.map((text: string, idx: number) => ({ time: idx * 4, text, isPlain: true }));
               lyricsCache.set(cacheKey, mapped);
               return mapped;
             }
@@ -250,4 +254,10 @@ export async function fetchLyrics(trackName: string, artistName: string): Promis
 
   inFlightRequests.set(cacheKey, fetchPromise);
   return fetchPromise;
+}
+
+// Helper to determine if a lyrics list is plain unsynced text
+export function isPlainLyrics(lyrics?: TimedLyric[] | null): boolean {
+  if (!lyrics || lyrics.length === 0) return false;
+  return lyrics.some((line) => line.isPlain === true);
 }

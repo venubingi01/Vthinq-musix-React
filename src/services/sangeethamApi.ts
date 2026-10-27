@@ -439,10 +439,14 @@ export function normalizeAlbum(raw: any): Album | null {
   let artists = 'Various Artists';
   if (raw.artists?.primary && Array.isArray(raw.artists.primary) && raw.artists.primary.length > 0) {
     artists = raw.artists.primary.map((a: any) => a.name).join(', ');
+  } else if (Array.isArray(raw.artists) && raw.artists.length > 0) {
+    artists = raw.artists.map((a: any) => (typeof a === 'string' ? a : a.name)).filter(Boolean).slice(0, 3).join(', ');
   } else if (raw.primaryArtists || raw.primary_artists) {
     artists = raw.primaryArtists || raw.primary_artists;
   } else if (raw.artist) {
     artists = raw.artist;
+  } else if (raw.type === 'playlist') {
+    artists = 'Curated Playlist • ' + (raw.language ? raw.language.charAt(0).toUpperCase() + raw.language.slice(1) : 'Top Hits');
   }
   artists = decodeHTMLEntities(artists);
 
@@ -534,6 +538,115 @@ export async function searchAlbums(query: string, page = 1, limit = 15): Promise
   return matched.length > 0 ? matched : STARTER_ALBUMS;
 }
 
+// Curated Top Starter Playlists & Charts
+export const STARTER_PLAYLISTS: Album[] = [
+  {
+    id: '1134643225',
+    title: 'Telugu: India Superhits Top 50',
+    artists: 'Curated Playlist • Telugu Top 50 Chartbusters',
+    year: '2024',
+    language: 'Telugu',
+    songCount: 50,
+    cover: 'https://c.saavncdn.com/editorial/Telugu-IndiaSuperhitsTop50_20261016061728_500x500.jpg'
+  },
+  {
+    id: '1134543272',
+    title: 'Hindi: India Superhits Top 50',
+    artists: 'Curated Playlist • 50 Most Popular Hindi Songs',
+    year: '2024',
+    language: 'Hindi',
+    songCount: 50,
+    cover: 'https://c.saavncdn.com/editorial/Hindi-IndiaSuperhitsTop50_20261023044158_500x500.jpg'
+  },
+  {
+    id: '1266560012',
+    title: "Let's Play - Anirudh Ravichander",
+    artists: 'Curated Playlist • Anirudh Ravichander Hits',
+    year: '2024',
+    language: 'Tamil / Hindi',
+    songCount: 26,
+    cover: 'https://c.saavncdn.com/editorial/Let_sPlayAnirudhRavichanderHindi_20250901053835_500x500.jpg'
+  },
+  {
+    id: '81882991',
+    title: "Let's Play - S. P. Balasubrahmanyam",
+    artists: 'Curated Playlist • SP Balasubrahmanyam Evergreen Hits',
+    year: '2024',
+    language: 'Telugu / Hindi',
+    songCount: 22,
+    cover: 'https://c.saavncdn.com/editorial/Let_sPlayS-P-BalasubrahmanyamHindi_20240212054517_500x500.jpg'
+  },
+  {
+    id: '903409848',
+    title: 'Sid Sriram - Love Songs & Melodies',
+    artists: 'Curated Playlist • Sid Sriram Melody Chartbusters',
+    year: '2024',
+    language: 'Telugu',
+    songCount: 30,
+    cover: 'https://c.saavncdn.com/editorial/SidSriramLoveSongsTelugu_20240328074634_500x500.jpg'
+  },
+  {
+    id: '802336660',
+    title: 'Arijit Singh Romantic & Melodies',
+    artists: 'Curated Playlist • Arijit Singh Romantic Essentials',
+    year: '2024',
+    language: 'Hindi',
+    songCount: 25,
+    cover: 'https://c.saavncdn.com/editorial/ArijitSinghSadSongsHindi_20240226083401_500x500.jpg'
+  },
+  {
+    id: '1170578801',
+    title: 'Telugu 1990s Chartbusters',
+    artists: 'Curated Playlist • Golden Telugu 90s Hits',
+    year: '2024',
+    language: 'Telugu',
+    songCount: 100,
+    cover: 'https://c.saavncdn.com/editorial/charts_Telugu1990s_157621_20240408063237_500x500.jpg'
+  },
+  {
+    id: '1170578805',
+    title: 'Telugu 2000s Chartbusters',
+    artists: 'Curated Playlist • Iconic Telugu 2000s Hits',
+    year: '2024',
+    language: 'Telugu',
+    songCount: 100,
+    cover: 'https://c.saavncdn.com/editorial/charts_Telugu2000s_119381_20240408063159_500x500.jpg'
+  }
+];
+
+// Search playlists using Sangeetham API with timeout & verified local fallback
+export async function searchPlaylists(query: string, page = 1, limit = 15): Promise<Album[]> {
+  if (!query.trim()) return STARTER_PLAYLISTS;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const url = `${SANGEETHAM_API_BASE}/search/playlists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      const rawList = data?.data?.results || (Array.isArray(data?.data) ? data.data : []);
+
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        const normalized = rawList.map(normalizeAlbum).filter((a): a is Album => a !== null);
+        if (normalized.length > 0) return normalized;
+      }
+    }
+  } catch (err) {
+    console.warn('Sangeetham API searchPlaylists note:', err);
+  }
+
+  // Filter fallback
+  const qLower = query.toLowerCase();
+  const matched = STARTER_PLAYLISTS.filter(
+    (p) => p.title.toLowerCase().includes(qLower) || p.artists.toLowerCase().includes(qLower)
+  );
+  return matched.length > 0 ? matched : STARTER_PLAYLISTS;
+}
+
 // Get Top Charts songs via Sangeetham API
 export async function fetchTopCharts(playlistQuery: string): Promise<Song[]> {
   const songs = await searchSongs(playlistQuery, 1, 15);
@@ -565,27 +678,44 @@ const ALBUM_ALIAS_MAP: Record<string, string> = {
   'alb_jawan': '48037104'
 };
 
-// Get Album Details by ID from Sangeetham API
+// Get Album Details by ID from Sangeetham API (supports both Albums and Playlists)
 export async function getAlbumDetails(albumId: string): Promise<Album | null> {
   const targetId = ALBUM_ALIAS_MAP[albumId] || albumId;
 
-  // Check local starter albums first
-  const localMatch = STARTER_ALBUMS.find((a) => a.id === targetId || a.id === albumId);
+  // Check local starter albums & playlists first
+  const localMatch = [...STARTER_ALBUMS, ...STARTER_PLAYLISTS].find(
+    (a) => a.id === targetId || a.id === albumId
+  );
   if (localMatch && localMatch.songs && localMatch.songs.length > 2) return localMatch;
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
+    // 1. Try albums endpoint first
     const url = `${SANGEETHAM_API_BASE}/albums?id=${encodeURIComponent(targetId)}`;
     const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
       const raw = data?.data || data;
-      if (raw) {
+      if (raw && (raw.name || raw.title) && Array.isArray(raw.songs) && raw.songs.length > 0) {
+        clearTimeout(timeoutId);
         const norm = normalizeAlbum(raw);
+        if (norm) return norm;
+      }
+    }
+
+    // 2. Fallback to playlists endpoint for chart / playlist collections
+    const playlistUrl = `${SANGEETHAM_API_BASE}/playlists?id=${encodeURIComponent(targetId)}`;
+    const pRes = await fetch(playlistUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (pRes.ok) {
+      const pData = await pRes.json();
+      const pRaw = pData?.data || pData;
+      if (pRaw && (pRaw.name || pRaw.title)) {
+        const norm = normalizeAlbum(pRaw);
         if (norm) return norm;
       }
     }

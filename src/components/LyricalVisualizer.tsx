@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useMusic } from '../context/MusicContext';
-import { fetchLyrics } from '../services/lyricsService';
+import { fetchLyrics, isPlainLyrics } from '../services/lyricsService';
 import type { TimedLyric } from '../types/music';
 import {
   Sparkles,
   Maximize2,
   Minimize2,
   Palette,
-  Loader2
+  Loader2,
+  AlignLeft
 } from 'lucide-react';
 
 export type LyricalThemeKey = 'noir' | 'lightgrey' | 'silver';
@@ -146,9 +147,11 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
     };
   }, [currentSong?.id, propLyrics]);
 
+  const isPlain = useMemo(() => isPlainLyrics(lyricsList), [lyricsList]);
+
   // Active lyric calculation
   const activeIndex = useMemo(() => {
-    if (!lyricsList.length) return -1;
+    if (isPlain || !lyricsList.length) return -1;
     let idx = -1;
     for (let i = lyricsList.length - 1; i >= 0; i--) {
       if (currentTime >= lyricsList[i].time) {
@@ -456,6 +459,38 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
                   <span>{currentSong.artist}</span>
                 </div>
               )}
+            </div>
+          ) : isPlain ? (
+            <div className="lyrical-plain-container">
+              <div className="lyrical-plain-header">
+                <span
+                  className="lyrical-plain-badge"
+                  style={{
+                    borderColor: theme.borderColor,
+                    color: theme.dotColor
+                  }}
+                >
+                  <AlignLeft size={13} />
+                  Plain Lyrics
+                </span>
+                <span className="lyrical-plain-hint" style={{ color: theme.inactiveTextColor }}>
+                  Full Text View
+                </span>
+              </div>
+              <div className="lyrical-plain-scroll custom-scrollbar">
+                {lyricsList.map((line, idx) => (
+                  <p
+                    key={`plain-${idx}`}
+                    className="lyrical-plain-line"
+                    style={{
+                      color: theme.activeTextColor,
+                      textShadow: theme.textGlow
+                    }}
+                  >
+                    {line.text}
+                  </p>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="lyrical-lyrics-stack">

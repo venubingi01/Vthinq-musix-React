@@ -26,6 +26,7 @@ export interface Album {
 export interface TimedLyric {
   time: number; // time in seconds
   text: string;
+  isPlain?: boolean;
 }
 
 export type TabType = 'home' | 'search' | 'favorites' | 'player' | 'lyrics' | 'equalizer' | 'album';

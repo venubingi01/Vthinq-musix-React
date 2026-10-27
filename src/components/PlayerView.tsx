@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useMusic } from '../context/MusicContext';
 import { searchMusicVideo } from '../services/videoService';
-import { fetchLyrics } from '../services/lyricsService';
+import { fetchLyrics, isPlainLyrics } from '../services/lyricsService';
 import { Visualizer } from './Visualizer';
 import { LyricalVisualizer } from './LyricalVisualizer';
 import { FullscreenVideoModal } from './FullscreenVideoModal';
@@ -104,24 +104,28 @@ export const PlayerView: React.FC = () => {
     };
   }, [currentSong?.id]);
 
-  // Calculate active lyric index based on audio currentTime
+  const isPlain = isPlainLyrics(lyrics);
+
+  // Calculate active lyric index based on audio currentTime (only for synced lyrics)
   let activeIndex = -1;
-  for (let i = lyrics.length - 1; i >= 0; i--) {
-    if (currentTime >= lyrics[i].time) {
-      activeIndex = i;
-      break;
+  if (!isPlain) {
+    for (let i = lyrics.length - 1; i >= 0; i--) {
+      if (currentTime >= lyrics[i].time) {
+        activeIndex = i;
+        break;
+      }
     }
   }
 
-  // Autoscroll active lyric line
+  // Autoscroll active lyric line (only for synced lyrics)
   useEffect(() => {
-    if (activeLineRef.current) {
+    if (!isPlain && activeLineRef.current) {
       activeLineRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, isPlain]);
 
   // 3. Synchronize YouTube Canvas video play/pause with audio playback state
   useEffect(() => {
@@ -514,7 +518,7 @@ export const PlayerView: React.FC = () => {
             <div className="lyrics-panel-header">
               <div className="lyrics-header-title">
                 <Quote size={20} className="text-pink" />
-                <h2>Live Synced Lyrics</h2>
+                <h2>{isPlain ? 'Lyrics' : 'Live Synced Lyrics'}</h2>
               </div>
               <button
                 className="share-lyrics-btn"
@@ -529,13 +533,21 @@ export const PlayerView: React.FC = () => {
             {isLyricsLoading ? (
               <div className="lyrics-loading-state">
                 <Loader2 size={32} className="spin-loader text-pink" />
-                <p>Syncing karaoke lyrics...</p>
+                <p>{isPlain ? 'Loading lyrics...' : 'Syncing karaoke lyrics...'}</p>
               </div>
             ) : lyrics.length === 0 ? (
               <div className="lyrics-empty-placeholder">
                 <p className="lyrics-empty-title">{currentSong?.name}</p>
                 {currentSong?.artist && <p className="lyrics-empty-artist">{currentSong.artist}</p>}
                 <p className="lyrics-empty-notice">Lyrics not available for this track</p>
+              </div>
+            ) : isPlain ? (
+              <div className="plain-lyrics-scroll-box custom-scrollbar">
+                {lyrics.map((line, index) => (
+                  <p key={`pv-plain-${index}`} className="plain-lyric-line">
+                    {line.text}
+                  </p>
+                ))}
               </div>
             ) : (
               <div className="lyrics-scroll-box">

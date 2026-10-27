@@ -8,10 +8,12 @@ import { useDebounce } from '../hooks/useDebounce';
 import {
   searchAlbums,
   searchSongs,
+  searchPlaylists,
   fetchTopCharts,
   getAlbumDetails,
   STARTER_ALBUMS,
-  STARTER_SONGS
+  STARTER_SONGS,
+  STARTER_PLAYLISTS
 } from '../services/saavnApi';
 import type { Song, Album } from '../types/music';
 import {
@@ -83,7 +85,7 @@ export const SearchView: React.FC = () => {
   // Results state
   const [albumsResults, setAlbumsResults] = useState<Album[]>(STARTER_ALBUMS);
   const [songsResults, setSongsResults] = useState<Song[]>(STARTER_SONGS);
-  const [chartSongs, setChartSongs] = useState<Song[]>(STARTER_SONGS);
+  const [playlistsResults, setPlaylistsResults] = useState<Album[]>(STARTER_PLAYLISTS);
   const [selectedChartChip, setSelectedChartChip] = useState<string>(CHART_PLAYLIST_CHIPS[0]);
 
   // Loading & voice states
@@ -111,6 +113,8 @@ export const SearchView: React.FC = () => {
         setAlbumsResults(STARTER_ALBUMS);
       } else if (searchCategory === 'songs') {
         setSongsResults(STARTER_SONGS);
+      } else if (searchCategory === 'charts') {
+        setPlaylistsResults(STARTER_PLAYLISTS);
       }
       return;
     }
@@ -145,15 +149,16 @@ export const SearchView: React.FC = () => {
           }
         });
     } else if (searchCategory === 'charts') {
-      fetchTopCharts(debouncedSearch)
-        .then((songs) => {
+      searchPlaylists(debouncedSearch)
+        .then((playlists) => {
           if (active) {
-            setChartSongs(songs);
+            setPlaylistsResults(playlists);
             setIsSearching(false);
           }
         })
         .catch(() => {
           if (active) {
+            setPlaylistsResults(STARTER_PLAYLISTS);
             setIsSearching(false);
           }
         });
@@ -164,22 +169,22 @@ export const SearchView: React.FC = () => {
     };
   }, [debouncedSearch, searchCategory]);
 
-  // Load chart songs when switching or selecting chart chips in Charts tab
+  // Load playlists & charts when switching or selecting chart chips in Charts tab
   useEffect(() => {
     if (searchCategory === 'charts' && !searchTerm.trim()) {
       let active = true;
       setIsSearching(true);
 
-      fetchTopCharts(selectedChartChip)
-        .then((songs) => {
+      searchPlaylists(selectedChartChip)
+        .then((playlists) => {
           if (active) {
-            setChartSongs(songs);
+            setPlaylistsResults(playlists);
             setIsSearching(false);
           }
         })
         .catch(() => {
           if (active) {
-            setChartSongs(STARTER_SONGS);
+            setPlaylistsResults(STARTER_PLAYLISTS);
             setIsSearching(false);
           }
         });
@@ -322,6 +327,9 @@ export const SearchView: React.FC = () => {
           >
             <Radio size={17} />
             <span>3. Charts & Playlists</span>
+            <span className="category-badge">
+              {searchTerm.trim() ? playlistsResults.length : STARTER_PLAYLISTS.length}
+            </span>
           </button>
         </div>
 
@@ -376,7 +384,7 @@ export const SearchView: React.FC = () => {
                 ? 'Searching full albums...'
                 : searchCategory === 'songs'
                 ? 'Searching song tracks...'
-                : 'Loading top charts...'}
+                : 'Searching charts & curated playlists...'}
             </p>
           </div>
         )}
@@ -566,7 +574,7 @@ export const SearchView: React.FC = () => {
           </div>
         )}
 
-        {/* 3. CHARTS & PLAYLISTS TAB (THIRD) */}
+        {/* 3. CHARTS & PLAYLISTS TAB (ALBUM KIND OF VIEW) */}
         {!isSearching && searchCategory === 'charts' && (
           <div>
             <div className="search-section-header">
@@ -574,83 +582,79 @@ export const SearchView: React.FC = () => {
                 <Radio size={22} className="text-pink" />
                 <span>
                   {searchTerm.trim()
-                    ? `Chart Results for "${searchTerm}"`
-                    : `Curated Chart: ${selectedChartChip}`}
+                    ? `Playlist & Chart Results for "${searchTerm}"`
+                    : selectedChartChip
+                    ? `Curated Playlists for "${selectedChartChip}"`
+                    : 'Featured Charts & Curated Playlists (Click to View Album)'}
                 </span>
               </h2>
-              <span className="search-section-count">{chartSongs.length} Tracks</span>
+              <span className="search-section-count">{playlistsResults.length} Playlists</span>
             </div>
 
-            <div className="search-results-list">
-              {chartSongs.map((song, idx) => {
-                const isFav = isFavorite(song.id);
-                const isCurrent = currentSong?.id === song.id;
-
-                return (
-                  <div
-                    key={`${song.id}-${idx}`}
-                    className={`search-result-row ${isCurrent ? 'active-row' : ''}`}
-                    onClick={() => playSong(song, chartSongs)}
+            {playlistsResults.length === 0 ? (
+              <div className="empty-results-state">
+                <Radio size={44} className="text-muted" />
+                <p>No playlists found for "{searchTerm || selectedChartChip}".</p>
+                <button
+                  className="search-category-btn active"
+                  style={{ marginTop: 12 }}
+                  onClick={() => setSearchCategory('songs')}
+                >
+                  <Music size={16} /> Switch to Songs Search
+                </button>
+              </div>
+            ) : (
+              <div className="album-cards-grid">
+                {playlistsResults.map((playlist) => (
+                  <Link
+                    key={playlist.id}
+                    href={`/album/${playlist.id}`}
+                    className="album-card-link"
+                    style={{ textDecoration: 'none' }}
                   >
-                    <div className="result-thumb-wrap">
-                      <img
-                        src={song.image}
-                        alt={song.name}
-                        className="result-thumb"
-                        loading="lazy"
-                      />
-                      <div className="result-play-overlay">
-                        <Play size={16} fill="#fff" />
+                    <div className="album-card-item playlist-card-item">
+                      <div className="album-card-img-wrapper">
+                        <img
+                          src={playlist.cover}
+                          alt={playlist.title}
+                          className="album-card-img"
+                          loading="lazy"
+                        />
+                        <div className="album-card-badge">
+                          <Radio size={12} />
+                          <span>{playlist.songs ? playlist.songs.length : playlist.songCount} Tracks</span>
+                        </div>
+                        <button
+                          className="album-card-play-overlay"
+                          onClick={(e) => handlePlayAlbum(e, playlist)}
+                          title={`Play ${playlist.title} Playlist`}
+                          aria-label={`Play ${playlist.title}`}
+                        >
+                          <Play size={20} fill="#fff" />
+                        </button>
+                      </div>
+
+                      <div className="album-card-meta">
+                        <h3 className="album-card-title" title={playlist.title}>
+                          {playlist.title}
+                        </h3>
+                        <p className="album-card-artists" title={playlist.artists}>
+                          {playlist.artists}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                          <span className="album-card-year">
+                            {playlist.language || 'Curated'}
+                          </span>
+                          <span className="album-card-year" style={{ color: 'var(--accent-pink)', fontWeight: 700, fontSize: '0.78rem' }}>
+                            PLAYLIST
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="result-info">
-                      <h3 className="result-title">{song.name}</h3>
-                      <p className="result-artist">{song.artist}</p>
-                      <span className="result-album">{song.album}</span>
-                    </div>
-
-                    <div className="track-duration-col" style={{ marginLeft: 'auto', marginRight: 12 }}>
-                      <Clock size={13} className="text-muted" />
-                      <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                        {formatDuration(song.duration)}
-                      </span>
-                    </div>
-
-                    <div className="result-actions" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        className="share-btn-inline"
-                        onClick={() => {
-                          const origin = typeof window !== 'undefined' ? window.location.origin : '';
-                          openShareModal({
-                            title: song.name,
-                            subtitle: `${song.artist} • ${song.album}`,
-                            url: `${origin}/player?songId=${song.id}&song=${encodeURIComponent(song.name)}`,
-                            image: song.image,
-                            type: 'song'
-                          });
-                        }}
-                        title="Share Song"
-                      >
-                        <Share2 size={16} />
-                      </button>
-
-                      <button
-                        className={`fav-btn-action ${isFav ? 'is-fav' : ''}`}
-                        onClick={() => toggleFavorite(song)}
-                        title={isFav ? 'Remove from favorites' : 'Add to favorites'}
-                      >
-                        <Heart
-                          size={18}
-                          fill={isFav ? '#ff3b30' : 'none'}
-                          color={isFav ? '#ff3b30' : 'currentColor'}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
