@@ -1105,7 +1105,7 @@ h4,
   font-size: 1.45rem;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 0 15px rgba(238, 9, 121, 0.8);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 8px rgba(238, 9, 121, 0.4);
 }
 
 .lyrics-line.past-line .lyrics-text {
@@ -2419,7 +2419,7 @@ input:checked+.toggle-slider:before {
   font-size: 1.35rem;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 0 15px rgba(238, 9, 121, 0.7);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 8px rgba(238, 9, 121, 0.4);
 }
 
 .karaoke-line.past-line .karaoke-text {
@@ -5974,19 +5974,8 @@ input:checked+.toggle-slider:before {
 
 .active-lyric-glow-text {
   display: inline-block;
-  animation: lyricGlowBreathe 3.5s ease-in-out infinite alternate;
-}
-
-@keyframes lyricGlowBreathe {
-
-  0%,
-  100% {
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
-  }
-
-  50% {
-    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.85));
-  }
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .lyrical-loading-box {
@@ -6024,7 +6013,7 @@ input:checked+.toggle-slider:before {
   font-size: 1.6rem;
   font-weight: 800;
   color: #ffffff;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.75), 0 0 40px rgba(255, 255, 255, 0.35);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   margin: 0;
   letter-spacing: -0.01em;
 }

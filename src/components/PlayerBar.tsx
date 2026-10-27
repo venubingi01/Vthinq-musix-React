@@ -169,14 +169,14 @@ export const PlayerBar: React.FC = () => {
 
         {/* Right side Extras: Visualizer, Player View Link & Volume */}
         <div className="player-extras-right">
-          <div
+          {/* <div
             className="desktop-visualizer"
             onClick={openFullscreenVisualizer}
             title="Click for Fullscreen Visualizer"
             style={{ cursor: 'pointer' }}
           >
             <Visualizer height={32} />
-          </div>
+          </div> */}
 
           {/* Dedicated Fullscreen Particle Visualizer Button */}
           <button

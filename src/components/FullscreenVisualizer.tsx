@@ -709,7 +709,7 @@ export const FullscreenVisualizer: React.FC = () => {
                 onClick={() => seek(activeLyric.time)}
                 style={{
                   color: currentTheme.primary,
-                  textShadow: `0 0 24px ${currentTheme.primary}, 0 0 50px ${currentTheme.secondary}`
+                  textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}40`
                 }}
                 title="Currently playing"
               >
@@ -720,7 +720,7 @@ export const FullscreenVisualizer: React.FC = () => {
                 className="lyrical-line lyrical-active-line intro"
                 style={{
                   color: currentTheme.primary,
-                  textShadow: `0 0 24px ${currentTheme.primary}, 0 0 50px ${currentTheme.secondary}`
+                  textShadow: `0 2px 10px rgba(0, 0, 0, 0.7), 0 0 8px ${currentTheme.primary}40`
                 }}
               >
                 <span className="active-lyric-glow-text">{currentSong?.name}</span>
