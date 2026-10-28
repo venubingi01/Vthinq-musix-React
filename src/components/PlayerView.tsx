@@ -86,7 +86,7 @@ export const PlayerView: React.FC = () => {
     let isMounted = true;
     setIsLyricsLoading(true);
 
-    fetchLyrics(currentSong.name, currentSong.artist)
+    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
       .then((data) => {
         if (isMounted) {
           setLyrics(data);

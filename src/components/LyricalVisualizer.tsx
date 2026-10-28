@@ -131,7 +131,7 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
     let isMounted = true;
     setIsLoadingLyrics(true);
 
-    fetchLyrics(currentSong.name, currentSong.artist)
+    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
       .then((data) => {
         if (isMounted) {
           setLyricsList(data);

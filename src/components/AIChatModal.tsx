@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
 import { searchSongs, STARTER_SONGS } from '../services/saavnApi';
 import type { ChatMessage, Song } from '../types/music';
@@ -30,6 +31,7 @@ export const AIChatModal: React.FC = () => {
     setIsAiChatOpen,
     playSong,
     togglePlay,
+    pauseSong,
     nextSong,
     prevSong,
     setVolume,
@@ -49,7 +51,8 @@ export const AIChatModal: React.FC = () => {
     }
   }, [messages, isTyping]);
 
-  if (!isAiChatOpen) return null;
+  const pathname = usePathname();
+  if (!isAiChatOpen || pathname?.startsWith('/car')) return null;
 
   // AI Command & Query Engine
   const handleSendMessage = async (textToSend?: string) => {
@@ -207,6 +210,9 @@ export const AIChatModal: React.FC = () => {
   };
 
   const handleVoice = () => {
+    // Immediately pause song when voice command is clicked
+    pauseSong();
+
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -220,7 +226,10 @@ export const AIChatModal: React.FC = () => {
       rec.lang = 'en-IN';
       rec.interimResults = false;
 
-      rec.onstart = () => setIsListening(true);
+      rec.onstart = () => {
+        setIsListening(true);
+        pauseSong();
+      };
       rec.onend = () => setIsListening(false);
       rec.onerror = () => setIsListening(false);
 

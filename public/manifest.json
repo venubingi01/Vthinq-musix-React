@@ -21,5 +21,14 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["music", "entertainment"]
+  "categories": ["music", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "Car Mode",
+      "short_name": "Car Mode",
+      "description": "Launch Sangeetham Automotive Car Mode",
+      "url": "/car",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }

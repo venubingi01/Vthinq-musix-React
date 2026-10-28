@@ -57,6 +57,18 @@
       "namedRegex": "^/album(?:/)?$"
     },
     {
+      "page": "/car",
+      "regex": "^/car(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/car(?:/)?$"
+    },
+    {
+      "page": "/car-mode",
+      "regex": "^/car\\-mode(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/car\\-mode(?:/)?$"
+    },
+    {
       "page": "/equalizer",
       "regex": "^/equalizer(?:/)?$",
       "routeKeys": {},

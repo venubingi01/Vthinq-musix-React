@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
 import {
   X,
@@ -150,7 +151,7 @@ export const FullscreenVisualizer: React.FC = () => {
   useEffect(() => {
     if (!currentSong) return;
     let isMounted = true;
-    fetchLyrics(currentSong.name, currentSong.artist).then((data) => {
+    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language).then((data) => {
       if (isMounted) setLyrics(data);
     });
     return () => {
@@ -556,7 +557,8 @@ export const FullscreenVisualizer: React.FC = () => {
     };
   }, [isFullscreenVisualizerOpen, analyserNode, isPlaying, mode, themeKey]);
 
-  if (!isFullscreenVisualizerOpen) return null;
+  const pathname = usePathname();
+  if (!isFullscreenVisualizerOpen || pathname?.startsWith('/car')) return null;
 
   const currentTheme = THEMES[themeKey];
   const isFav = currentSong ? isFavorite(currentSong.id) : false;

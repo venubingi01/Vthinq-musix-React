@@ -4,11 +4,15 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
-import { Sparkles, Sliders, Search, Music2, Disc, Quote } from 'lucide-react';
+import { Sparkles, Sliders, Search, Music2, Quote, Car } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { setIsAiChatOpen } = useMusic();
   const pathname = usePathname();
+
+  if (pathname?.startsWith('/car')) {
+    return null;
+  }
 
   return (
     <header className="app-header">
@@ -68,6 +72,17 @@ export const Navbar: React.FC = () => {
           >
             <Sliders size={19} />
             <span className="btn-label-desktop">EQ & 3D</span>
+          </Link>
+
+          {/* Car Mode Link */}
+          <Link
+            href="/car"
+            className="action-btn car-mode-nav-btn"
+            title="Sangeetham Car Mode"
+            style={{ textDecoration: 'none' }}
+          >
+            <Car size={19} />
+            <span className="btn-label-desktop">Car Mode</span>
           </Link>
 
           {/* Ask AI Music Assistant Trigger */}

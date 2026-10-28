@@ -43,6 +43,7 @@ interface MusicContextType {
   // Actions
   playSong: (song: Song, newPlaylist?: Song[]) => void;
   togglePlay: () => void;
+  pauseSong: () => void;
   seek: (seconds: number) => void;
   nextSong: () => void;
   prevSong: () => void;
@@ -421,6 +422,15 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [initWebAudio]);
 
+  // Explicit Pause function (e.g. for voice commands, searches, and focus interruptions)
+  const pauseSong = useCallback(() => {
+    if (!audioRef.current) return;
+    if (!audioRef.current.paused) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
+  }, []);
+
   // Seek audio position
   const seek = useCallback((seconds: number) => {
     if (audioRef.current) {
@@ -596,6 +606,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showToast,
         playSong,
         togglePlay,
+        pauseSong,
         seek,
         nextSong,
         prevSong,

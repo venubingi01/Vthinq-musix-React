@@ -1,0 +1,2458 @@
+/* ==========================================================================
+   Sangeetham Car Mode - Full Reference Design System
+   Target: Skoda Kylaq DHC 9-inch Android Infotainment (1280x720 / 1024x600)
+   Color Palette: Deep Cockpit Midnight (#070a12, #0b0f19), Electric Cyan (#00f5ff),
+   Vibrant Blue (#00a6ff), Neon Purple (#a855f7), Neon Pink (#ec4899), Pure White (#ffffff)
+   ========================================================================== */
+
+:root {
+  --car-bg-gradient: radial-gradient(circle at 50% 15%, #10192a 0%, #070a14 65%, #04060b 100%);
+  --car-card-bg: rgba(16, 22, 36, 0.92);
+  --car-card-border: rgba(0, 210, 255, 0.2);
+  --car-card-glow: 0 10px 36px rgba(0, 0, 0, 0.55);
+
+  --car-electric-blue: #00d2ff;
+  --car-electric-cyan: #00f5ff;
+  --car-neon-purple: #a855f7;
+  --car-neon-pink: #ec4899;
+  --car-neon-orange: #f97316;
+  --car-neon-yellow: #facc15;
+
+  --car-text-primary: #ffffff;
+  --car-text-secondary: #94a3b8;
+  --car-text-muted: #64748b;
+
+  --car-sidebar-w: 110px;
+}
+
+/* ==========================================================================
+   Master Shell & Workspace
+   ========================================================================== */
+.car-mode-root {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  background: var(--car-bg-gradient);
+  color: var(--car-text-primary);
+  font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  z-index: 100;
+}
+
+.car-workspace-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ==========================================================================
+   Header Bar (Consistent across reference board)
+   ========================================================================== */
+.car-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  height: 58px;
+  background: rgba(10, 14, 24, 0.96);
+  border-bottom: 1px solid var(--car-card-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 110;
+  flex-shrink: 0;
+}
+
+.car-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.car-brand-link {
+  display: flex;
+  align-items: center;
+}
+
+.car-brand-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.car-logo-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #00d2ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.45);
+}
+
+.car-logo-icon {
+  color: #ffffff;
+}
+
+.car-brand-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.car-brand-name {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.car-brand-subbadge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  color: var(--car-electric-blue);
+}
+
+.car-header-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.car-clock-display {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.car-system-icons-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.car-sys-icon {
+  color: var(--car-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-sys-icon.active {
+  color: #ffffff;
+}
+
+.car-sys-icon.offline {
+  color: #ef4444;
+}
+
+.car-sys-icon.car-vehicle-icon {
+  color: var(--car-electric-blue);
+}
+
+.car-exit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.car-exit-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Left Navigation Sidebar Rail (Screens 2, 4, 8)
+   ========================================================================== */
+.car-sidebar-rail {
+  width: var(--car-sidebar-w);
+  background: rgba(12, 17, 28, 0.85);
+  border-right: 1px solid var(--car-card-border);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  gap: 8px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.car-rail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px;
+  min-height: 58px;
+  border-radius: 16px;
+  background: transparent;
+  border: none;
+  color: var(--car-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.car-rail-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.car-rail-item.active {
+  background: linear-gradient(135deg, rgba(0, 166, 255, 0.28), rgba(0, 119, 255, 0.18));
+  border: 1.5px solid var(--car-electric-blue);
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.35);
+}
+
+.car-rail-icon {
+  color: inherit;
+}
+
+.car-rail-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* ==========================================================================
+   Central Stage Main View Area
+   ========================================================================== */
+.car-stage-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Screen 1: Hero Player (Default) Layout
+   ========================================================================== */
+.car-hero-screen1-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--car-card-bg);
+  border: 1px solid var(--car-card-border);
+  border-radius: 24px;
+  padding: 18px 24px;
+  box-shadow: var(--car-card-glow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.car-hero-stage-row {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 24px;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 860px) {
+  .car-hero-stage-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.car-hero-track-col {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.car-hero-art-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 18px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65), 0 0 20px rgba(0, 210, 255, 0.25);
+  border: 1.5px solid rgba(0, 210, 255, 0.35);
+}
+
+.car-hero-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-hero-art-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #141c2c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-hero-meta-group {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.car-hero-title-fav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.car-hero-song-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+.car-hero-fav-btn {
+  background: transparent;
+  border: none;
+  color: var(--car-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.car-hero-fav-btn.active {
+  color: #ef4444;
+}
+
+.fill-red {
+  fill: #ef4444;
+}
+
+.car-hero-artist-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--car-text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-hero-album-name {
+  font-size: 14px;
+  color: var(--car-text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right Display Column: Live Visualizer or Synced Lyrics */
+.car-hero-display-col {
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 14, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 10px 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.car-hero-switch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.car-hero-switch-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.car-hero-switch-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9px;
+  background: transparent;
+  border: none;
+  color: var(--car-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.car-hero-switch-tab.active {
+  background: var(--car-electric-blue);
+  color: #05070d;
+}
+
+.car-hero-fs-icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--car-text-secondary);
+  border-radius: 8px;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-hero-fs-icon-btn:hover {
+  color: #ffffff;
+  border-color: var(--car-electric-blue);
+}
+
+.car-hero-display-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-screen1-visualizer {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+}
+
+/* Scrubber Line (Screen 1) */
+.car-hero-scrubber-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 14px 0 10px;
+}
+
+.car-hero-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+}
+
+.car-hero-seek-track {
+  flex: 1;
+}
+
+.car-hero-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.car-hero-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid var(--car-electric-blue);
+  box-shadow: 0 0 12px var(--car-electric-blue);
+  cursor: pointer;
+}
+
+/* Bottom Controls Bar (Screen 1: Visualizer pill | Prev Play Next | Tap to Speak) */
+.car-hero-controls-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding-top: 6px;
+}
+
+.car-hero-ctrls-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.car-hero-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.car-hero-pill-btn:hover {
+  background: rgba(0, 210, 255, 0.2);
+  border-color: var(--car-electric-blue);
+}
+
+.car-hero-ctrls-center {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.car-hero-round-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.car-hero-round-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--car-electric-blue);
+  transform: scale(1.06);
+}
+
+.car-hero-play-main {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00d2ff 0%, #0077ff 100%);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 28px rgba(0, 210, 255, 0.6);
+  transition: all 0.2s ease;
+}
+
+.car-hero-play-main:hover {
+  box-shadow: 0 0 38px rgba(0, 210, 255, 0.85);
+  transform: scale(1.06);
+}
+
+.car-hero-play-main .car-play-icon.offset {
+  margin-left: 4px;
+}
+
+.car-hero-ctrls-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   Voice "Tap to Speak" Button (Screen 1 & Across)
+   ========================================================================== */
+.car-voice-hero-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px 8px 12px;
+  height: 60px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(0, 166, 255, 0.22), rgba(168, 85, 247, 0.18));
+  border: 1.5px solid var(--car-electric-blue);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.car-voice-hero-btn:hover {
+  box-shadow: 0 0 28px rgba(0, 210, 255, 0.55);
+  transform: scale(1.03);
+}
+
+.car-voice-icon-container {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f5ff, #0077ff);
+  color: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-voice-pulse-ring {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: 50%;
+  border: 2px solid #00d2ff;
+  animation: car-voice-pulse 1.4s infinite cubic-bezier(0, 0, 0.2, 1);
+}
+
+.car-voice-label-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.car-voice-primary-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.car-voice-sub-label {
+  font-size: 11px;
+  color: var(--car-electric-blue);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Screen 2: Voice Search – Listening State Overlay
+   ========================================================================== */
+.car-voice-screen2-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 8, 15, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  z-index: 500;
+  box-sizing: border-box;
+  padding: 24px 32px;
+}
+
+.car-voice-cancel-top-btn {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.car-voice-screen2-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 32px;
+  align-items: center;
+}
+
+.car-voice-orb-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.car-voice-giant-orb {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.car-voice-orb-glow-ring {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 210, 255, 0.6);
+  box-shadow: 0 0 45px rgba(0, 210, 255, 0.7);
+  animation: orb-pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes orb-pulse {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  50% { transform: scale(1.08); opacity: 1; box-shadow: 0 0 65px rgba(0, 210, 255, 0.9); }
+  100% { transform: scale(0.95); opacity: 0.6; }
+}
+
+.car-voice-orb-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #00f5ff 0%, #0077ff 65%, #050a18 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
+}
+
+.car-voice-orb-mic-icon {
+  color: #ffffff;
+}
+
+.car-voice-listening-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 16px;
+}
+
+.car-voice-waveform-bars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 50px;
+  margin-bottom: 20px;
+}
+
+.car-voice-wave-bar {
+  width: 5px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #00f5ff, #a855f7);
+  animation: wave-bar 0.9s infinite alternate ease-in-out;
+}
+
+@keyframes wave-bar {
+  0% { transform: scaleY(0.3); opacity: 0.4; }
+  100% { transform: scaleY(1.3); opacity: 1; }
+}
+
+.car-voice-live-badge-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+}
+
+.car-voice-live-transcript {
+  background: rgba(18, 26, 44, 0.92);
+  border: 1.5px solid var(--car-electric-blue);
+  border-radius: 18px;
+  padding: 12px 24px;
+  font-size: 18px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 24px rgba(0, 210, 255, 0.25);
+  animation: car-voice-pop 0.2s ease-out;
+}
+
+@keyframes car-voice-pop {
+  0% { transform: scale(0.96); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.car-voice-live-label {
+  color: var(--car-electric-blue);
+  font-weight: 800;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.car-voice-live-text {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.car-voice-live-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 20px;
+  background: var(--car-electric-blue);
+  border-radius: 2px;
+  animation: car-cursor-blink 0.8s infinite;
+}
+
+@keyframes car-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+.car-voice-waiting-pill {
+  background: rgba(18, 24, 38, 0.7);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 10px 22px;
+  font-size: 14px;
+  color: var(--car-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.car-voice-waiting-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--car-electric-blue);
+  animation: waiting-dot-pulse 1.2s infinite ease-in-out;
+}
+
+@keyframes waiting-dot-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--car-electric-blue); }
+}
+
+.car-voice-suggestions-panel {
+  background: rgba(14, 20, 32, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.car-voice-sugg-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.car-voice-sugg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.car-voice-sugg-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.car-voice-sugg-item:hover {
+  background: rgba(0, 210, 255, 0.15);
+  border-color: var(--car-electric-blue);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Screen 3: Search Results – Voice Query
+   ========================================================================== */
+.car-search-screen3-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.car-search-header-screen3 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.car-back-arrow-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.car-search-pill-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(14, 20, 32, 0.85);
+  border: 1.5px solid var(--car-electric-blue);
+  border-radius: 26px;
+  padding: 8px 18px;
+  height: 52px;
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.25);
+  box-sizing: border-box;
+}
+
+.car-search-mic-icon-btn,
+.car-search-pill-clear {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.car-search-pill-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.car-filter-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.car-filter-chip {
+  padding: 8px 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--car-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.car-filter-chip.active {
+  background: var(--car-electric-blue);
+  color: #05070d;
+  border-color: var(--car-electric-blue);
+}
+
+.car-screen3-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 54vh;
+  overflow-y: auto;
+}
+
+.car-screen3-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  border-radius: 18px;
+  background: rgba(16, 22, 36, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.car-screen3-card:hover {
+  background: rgba(0, 210, 255, 0.12);
+  border-color: var(--car-electric-blue);
+}
+
+.car-screen3-card.active {
+  border-color: var(--car-electric-blue);
+  background: linear-gradient(90deg, rgba(0, 210, 255, 0.2), transparent);
+}
+
+.car-s3-cover-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.car-s3-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-s3-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.car-s3-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-s3-artist {
+  font-size: 13px;
+  color: var(--car-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-s3-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.car-s3-play-circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--car-electric-blue);
+  border: none;
+  color: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.car-s3-more-btn {
+  background: transparent;
+  border: none;
+  color: var(--car-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.car-load-more-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0 24px 0;
+  width: 100%;
+}
+
+.car-load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  min-height: 56px;
+  background: rgba(0, 210, 255, 0.12);
+  border: 1.5px solid var(--car-electric-blue);
+  color: #ffffff;
+  border-radius: 28px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.18);
+}
+
+.car-load-more-btn:hover:not(:disabled) {
+  background: rgba(0, 210, 255, 0.25);
+  box-shadow: 0 6px 26px rgba(0, 210, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.car-load-more-btn:active:not(:disabled) {
+  background: var(--car-electric-blue);
+  color: #05070d;
+  transform: translateY(1px);
+}
+
+.car-load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.car-search-end-banner {
+  text-align: center;
+  padding: 18px 0 12px 0;
+  color: var(--car-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   Screen 4: Visualizer Styles Selection
+   ========================================================================== */
+.car-viz-styles-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.car-viz-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.car-viz-main-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.car-viz-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.car-viz-toggle-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+}
+
+.car-switch-pill {
+  width: 56px;
+  height: 32px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.car-switch-pill.active {
+  background: var(--car-electric-blue);
+  border-color: var(--car-electric-blue);
+}
+
+.car-switch-handle {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.car-switch-pill.active .car-switch-handle {
+  transform: translateX(24px);
+}
+
+.car-viz-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .car-viz-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.car-viz-card {
+  background: rgba(16, 22, 36, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.car-viz-card:hover {
+  border-color: var(--car-electric-blue);
+  transform: translateY(-3px);
+}
+
+.car-viz-card.selected {
+  border-color: var(--car-electric-blue);
+  background: linear-gradient(180deg, rgba(0, 210, 255, 0.18), rgba(16, 22, 36, 0.95));
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+}
+
+.car-viz-card-preview {
+  height: 110px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.car-viz-check-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--car-electric-blue);
+  color: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-viz-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.car-viz-card-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.car-viz-card-desc {
+  font-size: 12px;
+  color: var(--car-text-secondary);
+}
+
+/* Previews graphics inside cards */
+.preview-bars-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 60px;
+}
+
+.pb-bar {
+  width: 8px;
+  border-radius: 4px;
+  background: linear-gradient(0deg, #00d2ff, #f59e0b);
+}
+.pb-bar.b1 { height: 25px; }
+.pb-bar.b2 { height: 42px; }
+.pb-bar.b3 { height: 55px; }
+.pb-bar.b4 { height: 48px; }
+.pb-bar.b5 { height: 35px; }
+.pb-bar.b6 { height: 52px; }
+.pb-bar.b7 { height: 28px; }
+
+.preview-circle-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #00f5ff;
+  box-shadow: 0 0 16px #00f5ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-circle-core {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #a855f7;
+}
+
+.preview-particles-wrap {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.p-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: #00f5ff;
+}
+.p-dot.d1 { width: 8px; height: 8px; top: 10px; left: 20px; background: #ec4899; }
+.p-dot.d2 { width: 12px; height: 12px; top: 30px; left: 35px; background: #00f5ff; }
+.p-dot.d3 { width: 6px; height: 6px; top: 45px; left: 15px; background: #a855f7; }
+.p-dot.d4 { width: 10px; height: 10px; top: 15px; left: 50px; background: #f59e0b; }
+.p-dot.d5 { width: 7px; height: 7px; top: 40px; left: 55px; background: #00f5ff; }
+
+/* ==========================================================================
+   Screen 5: Equalizer – Custom Bands and Presets
+   ========================================================================== */
+.car-eq-view-screen5 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.car-eq-header-screen5 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.car-eq-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.car-eq-screen5-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.car-eq-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.car-eq-toggle-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+}
+
+.car-eq-presets-screen5 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.car-eq-preset-chip-screen5 {
+  padding: 8px 20px;
+  min-height: 40px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--car-text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.car-eq-preset-chip-screen5.active {
+  background: var(--car-electric-blue);
+  color: #05070d;
+  border-color: var(--car-electric-blue);
+  box-shadow: 0 0 16px rgba(0, 210, 255, 0.4);
+}
+
+.car-eq-faders-screen5 {
+  background: rgba(14, 20, 32, 0.8);
+  border: 1px solid var(--car-card-border);
+  border-radius: 22px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.car-eq-sliders-row-screen5 {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+}
+
+.car-fader-col-screen5 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.car-fader-label-top {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+}
+
+.car-fader-track-screen5 {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-v-slider-screen5 {
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  width: 24px;
+  height: 110px;
+  cursor: pointer;
+}
+
+.car-fader-db-screen5 {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--car-electric-blue);
+  font-variant-numeric: tabular-nums;
+}
+
+.car-eq-reset-col-screen5 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 20px;
+}
+
+.car-eq-reset-btn-screen5 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.car-eq-reset-btn-screen5:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--car-electric-blue);
+}
+
+.car-eq-enhancements-subrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.car-enhancement-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 18px;
+  background: rgba(14, 20, 32, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.car-h-slider-mini {
+  width: 90px;
+  accent-color: var(--car-electric-blue);
+}
+
+.car-spatial-toggle {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--car-text-secondary);
+  cursor: pointer;
+}
+
+.car-spatial-toggle.on {
+  background: var(--car-neon-purple);
+  color: #ffffff;
+  border-color: var(--car-neon-purple);
+}
+
+/* ==========================================================================
+   Screen 8: Playing Next Queue List
+   ========================================================================== */
+.car-queue-screen8-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.car-queue-header-screen8 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.car-queue-title-screen8 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.car-queue-actions-screen8 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.car-queue-action-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--car-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.car-queue-action-pill.active {
+  background: var(--car-electric-blue);
+  color: #05070d;
+  border-color: var(--car-electric-blue);
+}
+
+.car-queue-ranked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 56vh;
+  overflow-y: auto;
+}
+
+.car-queue-row-screen8 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: rgba(16, 22, 36, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.car-queue-row-screen8:hover {
+  background: rgba(0, 210, 255, 0.12);
+  border-color: var(--car-electric-blue);
+}
+
+.car-queue-row-screen8.active {
+  background: linear-gradient(90deg, rgba(0, 210, 255, 0.22), transparent);
+  border-color: var(--car-electric-blue);
+}
+
+.car-q8-rank {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--car-text-muted);
+  width: 22px;
+  text-align: center;
+}
+
+.car-q8-cover-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.car-q8-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-q8-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.car-queue-row-screen8:hover .car-q8-play-overlay {
+  opacity: 1;
+}
+
+.car-q8-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.car-q8-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-q8-subtitle {
+  font-size: 13px;
+  color: var(--car-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-q8-playing-indicator {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+
+.q8-bar {
+  width: 3.5px;
+  border-radius: 2px;
+  background: var(--car-electric-blue);
+  animation: q-bar 0.8s infinite alternate ease-in-out;
+}
+.q8-bar.b1 { height: 10px; animation-delay: 0.1s; }
+.q8-bar.b2 { height: 16px; animation-delay: 0.3s; }
+.q8-bar.b3 { height: 8px; animation-delay: 0.2s; }
+
+@keyframes q-bar {
+  0% { transform: scaleY(0.4); }
+  100% { transform: scaleY(1.2); }
+}
+
+/* ==========================================================================
+   Synced Karaoke Lyrics in Car Mode
+   ========================================================================== */
+.car-lyrics-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 17, 28, 0.95);
+  border: 1px solid var(--car-card-border);
+  border-radius: 22px;
+  padding: 18px 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.car-screen1-lyrics {
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+}
+
+.car-lyrics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.car-lyrics-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.car-lyrics-track-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.car-lyrics-track-artist {
+  font-size: 13px;
+  color: var(--car-electric-blue);
+  margin: 0;
+}
+
+.car-lyrics-close-btn {
+  padding: 6px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.car-lyrics-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.car-lyrics-lines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 40px 0;
+}
+
+.car-lyric-line {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.45;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.car-lyric-line:hover {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.car-lyric-line.active {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(0, 245, 255, 0.75);
+  background: linear-gradient(90deg, rgba(0, 210, 255, 0.22), transparent);
+  transform: scale(1.03) translateX(8px);
+}
+
+.car-lyric-sparkle {
+  color: var(--car-electric-cyan);
+  animation: pulse-glow 1.5s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.car-lyric-line.past {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.car-lyrics-loading,
+.car-lyrics-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  text-align: center;
+  color: var(--car-text-secondary);
+}
+
+/* ==========================================================================
+   Screen 7: Fullscreen Visualizer
+   ========================================================================== */
+.car-fs-screen7-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #05070d;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.car-fs-close-top-btn {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 620;
+}
+
+.car-fs-canvas-container {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.car-fs-bottom-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 32px;
+  right: 32px;
+  background: rgba(12, 17, 28, 0.9);
+  border: 1.5px solid var(--car-card-border);
+  border-radius: 24px;
+  padding: 14px 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 0.4fr;
+  align-items: center;
+  gap: 20px;
+  z-index: 610;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+}
+
+.car-fs-track-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.car-fs-mini-cover {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.car-fs-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.car-fs-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.car-fs-artist {
+  font-size: 13px;
+  color: var(--car-electric-blue);
+}
+
+.car-fs-center-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.car-fs-scrubber-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.car-fs-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.car-fs-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.car-fs-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--car-electric-blue);
+}
+
+.car-fs-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.car-fs-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.car-fs-play-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--car-electric-blue);
+  border: none;
+  color: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.car-fs-right-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.car-fs-min-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Screen 6: Redesigned Car Mode Favorites View
+   ========================================================================== */
+.car-fav-screen-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.car-fav-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(20, 28, 48, 0.9), rgba(10, 16, 28, 0.95));
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  border-radius: 22px;
+  padding: 14px 24px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+.car-fav-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.car-fav-badge-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(255, 45, 85, 0.15);
+  border: 1.5px solid rgba(255, 45, 85, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(255, 45, 85, 0.3);
+}
+
+.fill-neon-pink {
+  fill: #ff2d55;
+}
+
+.text-neon-pink {
+  color: #ff2d55;
+}
+
+.car-fav-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.car-fav-main-heading {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.car-fav-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+}
+
+.car-fav-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.car-fav-play-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--car-electric-blue);
+  color: #05070d;
+  border: none;
+  border-radius: 26px;
+  padding: 12px 26px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.35);
+  transition: all 0.2s ease;
+}
+
+.car-fav-play-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(0, 210, 255, 0.5);
+  background: #33dcff;
+}
+
+.car-fav-play-all-btn:active {
+  transform: translateY(1px);
+}
+
+.fill-black {
+  fill: #05070d;
+}
+
+.car-fav-shuffle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-radius: 26px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.car-fav-shuffle-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Favorites Cards List */
+.car-fav-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: calc(100vh - 210px);
+  padding-right: 6px;
+}
+
+.car-fav-card-row {
+  display: grid;
+  grid-template-columns: 44px 62px 1fr 64px 110px;
+  align-items: center;
+  gap: 14px;
+  background: rgba(16, 22, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  min-height: 72px;
+}
+
+.car-fav-card-row:hover {
+  background: rgba(20, 30, 52, 0.95);
+  border-color: rgba(0, 210, 255, 0.4);
+  transform: translateX(4px);
+}
+
+.car-fav-card-row.active {
+  background: linear-gradient(90deg, rgba(0, 210, 255, 0.22), rgba(16, 24, 42, 0.95));
+  border-color: var(--car-electric-blue);
+  box-shadow: 0 4px 24px rgba(0, 210, 255, 0.2);
+}
+
+.car-fav-rank-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-fav-rank-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--car-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.car-fav-equalizer-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 20px;
+}
+
+.car-fav-equalizer-bars .bar {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--car-electric-blue);
+  animation: car-eq-bounce 0.8s infinite ease-in-out alternate;
+}
+
+.car-fav-equalizer-bars .bar-1 { height: 16px; animation-delay: 0.1s; }
+.car-fav-equalizer-bars .bar-2 { height: 20px; animation-delay: 0.3s; }
+.car-fav-equalizer-bars .bar-3 { height: 12px; animation-delay: 0.5s; }
+
+@keyframes car-eq-bounce {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1.2); }
+}
+
+.car-fav-art-wrap {
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.car-fav-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-fav-art-placeholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(12, 18, 30, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-fav-art-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.car-fav-card-row:hover .car-fav-art-overlay,
+.car-fav-art-overlay.show {
+  opacity: 1;
+}
+
+.car-fav-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.car-fav-title-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.car-fav-track-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-fav-live-tag {
+  background: rgba(0, 210, 255, 0.2);
+  border: 1px solid var(--car-electric-blue);
+  color: var(--car-electric-blue);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+
+.car-fav-artist-line {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--car-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-fav-duration-tag {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--car-text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.car-fav-btns-col {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.car-fav-circle-play-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--car-electric-blue);
+  border: none;
+  color: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 210, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.car-fav-circle-play-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+}
+
+.car-fav-circle-play-btn.playing {
+  background: #ffffff;
+  color: #05070d;
+}
+
+.car-fav-remove-heart-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 45, 85, 0.12);
+  border: 1px solid rgba(255, 45, 85, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.car-fav-remove-heart-btn:hover {
+  background: rgba(255, 45, 85, 0.25);
+  border-color: rgba(255, 45, 85, 0.6);
+  transform: scale(1.08);
+}
+
+/* Empty State */
+.car-fav-empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: calc(100vh - 160px);
+  gap: 14px;
+  padding: 20px;
+}
+
+.car-fav-empty-orb {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 45, 85, 0.25) 0%, rgba(10, 16, 28, 0) 70%);
+  border: 2px solid rgba(255, 45, 85, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 50px rgba(255, 45, 85, 0.35);
+  margin-bottom: 8px;
+}
+
+.car-fav-empty-pulse-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 45, 85, 0.3);
+  animation: car-fav-ring-spin 18s linear infinite;
+}
+
+@keyframes car-fav-ring-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.car-fav-empty-icon {
+  fill: #ff2d55;
+  color: #ff2d55;
+  filter: drop-shadow(0 0 16px rgba(255, 45, 85, 0.6));
+  animation: car-fav-heart-beat 2s infinite ease-in-out;
+}
+
+@keyframes car-fav-heart-beat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.12); }
+  30% { transform: scale(1.02); }
+  45% { transform: scale(1.1); }
+}
+
+.car-fav-empty-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.car-fav-empty-subtitle {
+  font-size: 15px;
+  color: var(--car-text-secondary);
+  max-width: 480px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.car-fav-explore-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 210, 255, 0.15);
+  border: 1.5px solid var(--car-electric-blue);
+  color: #ffffff;
+  border-radius: 28px;
+  padding: 13px 30px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.25);
+  transition: all 0.2s ease;
+}
+
+.car-fav-explore-btn:hover {
+  background: rgba(0, 210, 255, 0.3);
+  box-shadow: 0 6px 28px rgba(0, 210, 255, 0.45);
+  transform: translateY(-2px);
+}
+
+.car-fav-explore-btn:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   Reduced Motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

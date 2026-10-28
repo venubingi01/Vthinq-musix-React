@@ -1,3 +1,0 @@
-module.exports=[34955,a=>{"use strict";var b=a.i(87924),c=a.i(72131),d=a.i(50944),e=a.i(86042);function f(){let a=(0,d.useSearchParams)().get("id")||"alb_ala_vaikunthapurramuloo";return(0,b.jsx)(e.f,{albumId:a})}a.s(["default",0,function(){return(0,b.jsx)(c.Suspense,{fallback:(0,b.jsx)("div",{className:"album-loading-state",children:"Loading Album..."}),children:(0,b.jsx)(f,{})})}])}];
-
-//# sourceMappingURL=src_app_album_page_tsx_1p75_pmwqgtpm._.js.map

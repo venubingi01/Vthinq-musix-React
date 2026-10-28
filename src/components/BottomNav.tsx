@@ -24,6 +24,10 @@ export const BottomNav: React.FC = () => {
   const { favorites } = useMusic();
   const pathname = usePathname();
 
+  if (pathname?.startsWith('/car')) {
+    return null;
+  }
+
   return (
     <nav className="bottom-nav">
       <div className="bottom-nav-inner">

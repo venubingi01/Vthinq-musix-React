@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
-import { Visualizer } from './Visualizer';
 import {
   Play,
   Pause,
@@ -18,7 +17,8 @@ import {
   Quote,
   Loader2,
   Share2,
-  Sparkles
+  Sparkles,
+  Car
 } from 'lucide-react';
 
 // Format seconds to mm:ss
@@ -56,7 +56,7 @@ export const PlayerBar: React.FC = () => {
 
   const pathname = usePathname();
 
-  if (!currentSong) return null;
+  if (!currentSong || pathname?.startsWith('/car')) return null;
 
   const isFav = isFavorite(currentSong.id);
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -187,6 +187,17 @@ export const PlayerBar: React.FC = () => {
           >
             <Sparkles size={18} className="sparkle-icon" />
           </button>
+
+          {/* Car Mode Link */}
+          <Link
+            href="/car"
+            className="ctrl-btn desktop-only-btn"
+            title="Launch Car Mode"
+            aria-label="Car Mode"
+            style={{ textDecoration: 'none' }}
+          >
+            <Car size={19} />
+          </Link>
 
           {/* Now Playing & Video view Link */}
           <Link

@@ -3,6 +3,8 @@
   "/_not-found/page": "/_not-found",
   "/album/[id]/page": "/album/[id]",
   "/album/page": "/album",
+  "/car-mode/page": "/car-mode",
+  "/car/page": "/car",
   "/equalizer/page": "/equalizer",
   "/favorites/page": "/favorites",
   "/lyrics/page": "/lyrics",

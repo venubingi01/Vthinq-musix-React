@@ -76,7 +76,7 @@ export const SearchView: React.FC = () => {
   const initialTab = (searchParams.get('tab') as SearchCategory) || 'albums';
   const initialQuery = searchParams.get('q') || '';
 
-  const { playSong, currentSong, isPlaying, toggleFavorite, isFavorite, openShareModal } = useMusic();
+  const { playSong, currentSong, isPlaying, pauseSong, toggleFavorite, isFavorite, openShareModal } = useMusic();
 
   // Search category state: ALBUMS FIRST by requirement
   const [searchCategory, setSearchCategory] = useState<SearchCategory>(initialTab);
@@ -91,6 +91,11 @@ export const SearchView: React.FC = () => {
   // Loading & voice states
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
+
+  // Pagination states for loading all songs/albums related to search query
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   // Debounce user input by 400ms to eliminate redundant network requests
   const debouncedSearch = useDebounce(searchTerm, 400);
@@ -109,6 +114,8 @@ export const SearchView: React.FC = () => {
 
     if (!debouncedSearch.trim()) {
       setIsSearching(false);
+      setPage(1);
+      setHasMore(false);
       if (searchCategory === 'albums') {
         setAlbumsResults(STARTER_ALBUMS);
       } else if (searchCategory === 'songs') {
@@ -120,45 +127,53 @@ export const SearchView: React.FC = () => {
     }
 
     setIsSearching(true);
+    setPage(1);
+    setHasMore(true);
 
     if (searchCategory === 'albums') {
-      searchAlbums(debouncedSearch)
+      searchAlbums(debouncedSearch, 1, 20)
         .then((albums) => {
           if (active) {
             setAlbumsResults(albums);
+            setHasMore(albums.length >= 20);
             setIsSearching(false);
           }
         })
         .catch(() => {
           if (active) {
             setAlbumsResults(STARTER_ALBUMS);
+            setHasMore(false);
             setIsSearching(false);
           }
         });
     } else if (searchCategory === 'songs') {
-      searchSongs(debouncedSearch)
+      searchSongs(debouncedSearch, 1, 20)
         .then((songs) => {
           if (active) {
             setSongsResults(songs);
+            setHasMore(songs.length >= 20);
             setIsSearching(false);
           }
         })
         .catch(() => {
           if (active) {
+            setHasMore(false);
             setIsSearching(false);
           }
         });
     } else if (searchCategory === 'charts') {
-      searchPlaylists(debouncedSearch)
+      searchPlaylists(debouncedSearch, 1, 20)
         .then((playlists) => {
           if (active) {
             setPlaylistsResults(playlists);
+            setHasMore(playlists.length >= 20);
             setIsSearching(false);
           }
         })
         .catch(() => {
           if (active) {
             setPlaylistsResults(STARTER_PLAYLISTS);
+            setHasMore(false);
             setIsSearching(false);
           }
         });
@@ -168,6 +183,80 @@ export const SearchView: React.FC = () => {
       active = false;
     };
   }, [debouncedSearch, searchCategory]);
+
+  // Load more handler to fetch next pages and append results
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    try {
+      if (searchCategory === 'albums') {
+        const query = debouncedSearch.trim();
+        if (!query) {
+          setIsLoadingMore(false);
+          setHasMore(false);
+          return;
+        }
+        const moreAlbums = await searchAlbums(query, nextPage, 20);
+        if (!moreAlbums || moreAlbums.length === 0) {
+          setHasMore(false);
+        } else {
+          setAlbumsResults((prev) => {
+            const existingIds = new Set(prev.map((a) => a.id));
+            const unique = moreAlbums.filter((a) => !existingIds.has(a.id));
+            return [...prev, ...unique];
+          });
+          setPage(nextPage);
+          if (moreAlbums.length < 20) {
+            setHasMore(false);
+          }
+        }
+      } else if (searchCategory === 'songs') {
+        const query = debouncedSearch.trim();
+        if (!query) {
+          setIsLoadingMore(false);
+          setHasMore(false);
+          return;
+        }
+        const moreSongs = await searchSongs(query, nextPage, 20);
+        if (!moreSongs || moreSongs.length === 0) {
+          setHasMore(false);
+        } else {
+          setSongsResults((prev) => {
+            const existingIds = new Set(prev.map((s) => s.id));
+            const unique = moreSongs.filter((s) => !existingIds.has(s.id));
+            return [...prev, ...unique];
+          });
+          setPage(nextPage);
+          if (moreSongs.length < 20) {
+            setHasMore(false);
+          }
+        }
+      } else if (searchCategory === 'charts') {
+        const query = debouncedSearch.trim() || selectedChartChip;
+        const morePlaylists = await searchPlaylists(query, nextPage, 20);
+        if (!morePlaylists || morePlaylists.length === 0) {
+          setHasMore(false);
+        } else {
+          setPlaylistsResults((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const unique = morePlaylists.filter((p) => !existingIds.has(p.id));
+            return [...prev, ...unique];
+          });
+          setPage(nextPage);
+          if (morePlaylists.length < 20) {
+            setHasMore(false);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Load more error:', err);
+      setHasMore(false);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   // Load playlists & charts when switching or selecting chart chips in Charts tab
   useEffect(() => {
@@ -217,6 +306,9 @@ export const SearchView: React.FC = () => {
 
   // Web Speech API Voice Search
   const handleVoiceSearch = () => {
+    // Immediately pause song when voice search is clicked
+    pauseSong();
+
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -230,7 +322,10 @@ export const SearchView: React.FC = () => {
       recognition.lang = 'en-IN';
       recognition.interimResults = false;
 
-      recognition.onstart = () => setIsListening(true);
+      recognition.onstart = () => {
+        setIsListening(true);
+        pauseSong();
+      };
       recognition.onend = () => setIsListening(false);
       recognition.onerror = () => setIsListening(false);
 
@@ -246,6 +341,55 @@ export const SearchView: React.FC = () => {
       console.warn('Voice error:', err);
       setIsListening(false);
     }
+  };
+
+  const renderLoadMoreButton = () => {
+    const count =
+      searchCategory === 'albums'
+        ? albumsResults.length
+        : searchCategory === 'songs'
+        ? songsResults.length
+        : playlistsResults.length;
+
+    if (count === 0) return null;
+
+    if (hasMore) {
+      return (
+        <div className="search-load-more-wrap">
+          <button
+            type="button"
+            className="search-load-more-btn"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            aria-label={`Load more ${searchCategory}`}
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 size={18} className="spin-loader" />
+                <span>Loading more {searchCategory}...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={18} className="text-pink" />
+                <span>
+                  Load More {searchCategory === 'albums' ? 'Albums' : searchCategory === 'songs' ? 'Songs' : 'Playlists'}
+                </span>
+              </>
+            )}
+          </button>
+        </div>
+      );
+    }
+
+    if (searchTerm.trim() && count > 0) {
+      return (
+        <div className="search-end-of-results">
+          <span>✓ All {count} {searchCategory} loaded</span>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -483,6 +627,7 @@ export const SearchView: React.FC = () => {
                 ))}
               </div>
             )}
+            {renderLoadMoreButton()}
           </div>
         )}
 
@@ -571,6 +716,7 @@ export const SearchView: React.FC = () => {
                 })}
               </div>
             )}
+            {renderLoadMoreButton()}
           </div>
         )}
 
@@ -655,6 +801,7 @@ export const SearchView: React.FC = () => {
                 ))}
               </div>
             )}
+            {renderLoadMoreButton()}
           </div>
         )}
       </div>

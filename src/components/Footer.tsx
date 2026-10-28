@@ -1,8 +1,12 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/car')) return null;
+
   return (
     <footer className="app-footer">
       <div className="footer-content">

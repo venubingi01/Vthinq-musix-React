@@ -488,14 +488,20 @@ export async function searchSongs(query: string, page = 1, limit = 20): Promise<
       const data = await res.json();
       const rawList = data?.data?.results || (Array.isArray(data?.data) ? data.data : []);
 
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const normalized = rawList.map(normalizeSong).filter((s): s is Song => s !== null);
-        if (normalized.length > 0) return normalized;
+      if (Array.isArray(rawList)) {
+        if (rawList.length > 0) {
+          const normalized = rawList.map(normalizeSong).filter((s): s is Song => s !== null);
+          if (normalized.length > 0) return normalized;
+        }
+        return [];
       }
     }
   } catch (err) {
     console.warn('Sangeetham API searchSongs note:', err);
   }
+
+  // If page > 1, do not return starter fallback on failure or exhaustion
+  if (page > 1) return [];
 
   // Filter starter list as offline fallback
   const qLower = query.toLowerCase();
@@ -506,8 +512,8 @@ export async function searchSongs(query: string, page = 1, limit = 20): Promise<
 }
 
 // Search albums using Sangeetham API with timeout & verified local fallback
-export async function searchAlbums(query: string, page = 1, limit = 15): Promise<Album[]> {
-  if (!query.trim()) return STARTER_ALBUMS;
+export async function searchAlbums(query: string, page = 1, limit = 20): Promise<Album[]> {
+  if (!query.trim()) return page === 1 ? STARTER_ALBUMS : [];
 
   try {
     const controller = new AbortController();
@@ -521,14 +527,20 @@ export async function searchAlbums(query: string, page = 1, limit = 15): Promise
       const data = await res.json();
       const rawList = data?.data?.results || (Array.isArray(data?.data) ? data.data : []);
 
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const normalized = rawList.map(normalizeAlbum).filter((a): a is Album => a !== null);
-        if (normalized.length > 0) return normalized;
+      if (Array.isArray(rawList)) {
+        if (rawList.length > 0) {
+          const normalized = rawList.map(normalizeAlbum).filter((a): a is Album => a !== null);
+          if (normalized.length > 0) return normalized;
+        }
+        return [];
       }
     }
   } catch (err) {
     console.warn('Sangeetham API searchAlbums note:', err);
   }
+
+  // If page > 1, do not return starter fallback on failure or exhaustion
+  if (page > 1) return [];
 
   // Filter starter albums as fallback
   const qLower = query.toLowerCase();
@@ -615,8 +627,8 @@ export const STARTER_PLAYLISTS: Album[] = [
 ];
 
 // Search playlists using Sangeetham API with timeout & verified local fallback
-export async function searchPlaylists(query: string, page = 1, limit = 15): Promise<Album[]> {
-  if (!query.trim()) return STARTER_PLAYLISTS;
+export async function searchPlaylists(query: string, page = 1, limit = 20): Promise<Album[]> {
+  if (!query.trim()) return page === 1 ? STARTER_PLAYLISTS : [];
 
   try {
     const controller = new AbortController();
@@ -630,14 +642,20 @@ export async function searchPlaylists(query: string, page = 1, limit = 15): Prom
       const data = await res.json();
       const rawList = data?.data?.results || (Array.isArray(data?.data) ? data.data : []);
 
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const normalized = rawList.map(normalizeAlbum).filter((a): a is Album => a !== null);
-        if (normalized.length > 0) return normalized;
+      if (Array.isArray(rawList)) {
+        if (rawList.length > 0) {
+          const normalized = rawList.map(normalizeAlbum).filter((a): a is Album => a !== null);
+          if (normalized.length > 0) return normalized;
+        }
+        return [];
       }
     }
   } catch (err) {
     console.warn('Sangeetham API searchPlaylists note:', err);
   }
+
+  // If page > 1, do not return starter fallback on failure or exhaustion
+  if (page > 1) return [];
 
   // Filter fallback
   const qLower = query.toLowerCase();
