@@ -85,9 +85,10 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
     const freqData = new Uint8Array(bufferLength);
     const timeData = new Uint8Array(bufferLength);
 
-    // Particle system
+    // Particle system matching normal player sunset palette
     const particles: Particle[] = [];
     const particleCount = isFullscreen ? 80 : 45;
+    const sunsetColors = ['#ee0979', '#ff2d55', '#ff6a00', '#ffa040', '#ff5493'];
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * (canvas.width || 600),
@@ -95,7 +96,7 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
         radius: Math.random() * 3 + 1.5,
         speedX: (Math.random() - 0.5) * 1.4,
         speedY: (Math.random() - 0.5) * 1.4,
-        color: ['#00f5ff', '#a855f7', '#ec4899', '#f59e0b'][i % 4],
+        color: sunsetColors[i % sunsetColors.length],
         alpha: Math.random() * 0.7 + 0.3,
         freqIndex: Math.floor(Math.random() * 40)
       });
@@ -124,7 +125,7 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
         if (sum > 0) hasRealAudio = true;
       }
 
-      // 1. FREQUENCY BARS STYLE (Matching Screen 1: Neon multi-color spectrum: violet -> cyan -> magenta -> orange -> yellow)
+      // 1. FREQUENCY BARS STYLE (Exact matching normal player: Sunset Magenta/Pink #ee0979 to Radiant Orange #ff6a00)
       if (currentStyle === 'bars') {
         const barCount = isFullscreen ? 56 : 38;
         const totalGap = 3.5 * (barCount - 1);
@@ -146,45 +147,27 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
 
           const barHeight = Math.max(6, magnitude * h * 0.92);
 
-          // Multi-color neon palette across spectrum (Screen 1 reference):
-          // 0.0-0.25: Indigo/Violet -> Cyan
-          // 0.25-0.55: Cyan -> Magenta/Pink
-          // 0.55-0.80: Pink -> Orange
-          // 0.80-1.0: Orange -> Golden Yellow
-          let topColor = '#00f5ff';
-          let btmColor = '#3b82f6';
-
-          if (progress < 0.22) {
-            topColor = '#00f5ff';
-            btmColor = '#4f46e5';
-          } else if (progress < 0.48) {
-            topColor = '#a855f7';
-            btmColor = '#00d2ff';
-          } else if (progress < 0.72) {
-            topColor = '#ec4899';
-            btmColor = '#9333ea';
-          } else if (progress < 0.88) {
-            topColor = '#f97316';
-            btmColor = '#ec4899';
-          } else {
-            topColor = '#facc15';
-            btmColor = '#ea580c';
-          }
-
+          // Sangeetham signature gradient: Deep pink #ee0979 at base to sunset orange #ff6a00 at crest
           const grad = ctx.createLinearGradient(0, h, 0, h - barHeight);
-          grad.addColorStop(0, btmColor);
-          grad.addColorStop(1, topColor);
+          grad.addColorStop(0, 'rgba(238, 9, 121, 0.95)');
+          grad.addColorStop(0.55, '#ff2d55');
+          grad.addColorStop(1, '#ff6a00');
+
+          ctx.shadowBlur = isPlaying ? 10 : 0;
+          ctx.shadowColor = 'rgba(238, 9, 121, 0.45)';
 
           ctx.fillStyle = grad;
           ctx.beginPath();
           ctx.roundRect(x, h - barHeight, barWidth, barHeight, [4, 4, 0, 0]);
           ctx.fill();
 
-          // Glowing cap dot
-          ctx.fillStyle = topColor;
+          // Radiant golden-orange cap dot matching normal player aesthetic
+          ctx.fillStyle = '#ff8800';
           ctx.beginPath();
           ctx.arc(x + barWidth / 2, h - barHeight, Math.min(2.5, barWidth / 2), 0, Math.PI * 2);
           ctx.fill();
+
+          ctx.shadowBlur = 0;
 
           x += barWidth + 3.5;
         }
@@ -195,10 +178,9 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
         ctx.beginPath();
         ctx.lineWidth = isFullscreen ? 4 : 3;
         const grad = ctx.createLinearGradient(0, 0, w, 0);
-        grad.addColorStop(0, '#00f5ff');
-        grad.addColorStop(0.3, '#a855f7');
-        grad.addColorStop(0.7, '#ec4899');
-        grad.addColorStop(1, '#f59e0b');
+        grad.addColorStop(0, '#ee0979');
+        grad.addColorStop(0.5, '#ff2d55');
+        grad.addColorStop(1, '#ff6a00');
         ctx.strokeStyle = grad;
 
         const sliceWidth = w / bufferLength;
@@ -221,7 +203,7 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
 
         ctx.lineTo(w, h / 2);
         ctx.shadowBlur = 14;
-        ctx.shadowColor = '#00d2ff';
+        ctx.shadowColor = 'rgba(238, 9, 121, 0.65)';
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
@@ -233,13 +215,13 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
         const baseRadius = Math.min(centerX, centerY) * 0.52;
         const numRays = 52;
 
-        // Inner glowing orb
+        // Inner glowing orb in sunset tones
         ctx.beginPath();
         ctx.arc(centerX, centerY, baseRadius * 0.65, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(0, 210, 255, 0.08)';
+        ctx.fillStyle = 'rgba(238, 9, 121, 0.08)';
         ctx.fill();
         ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(0, 210, 255, 0.45)';
+        ctx.strokeStyle = 'rgba(238, 9, 121, 0.45)';
         ctx.stroke();
 
         for (let i = 0; i < numRays; i++) {
@@ -259,9 +241,9 @@ export const CarVisualizer: React.FC<CarVisualizerProps> = ({
           const endY = centerY + Math.sin(angle) * (baseRadius + rayLength);
 
           const grad = ctx.createLinearGradient(startX, startY, endX, endY);
-          grad.addColorStop(0, '#00f5ff');
-          grad.addColorStop(0.5, '#a855f7');
-          grad.addColorStop(1, '#ec4899');
+          grad.addColorStop(0, '#ee0979');
+          grad.addColorStop(0.5, '#ff2d55');
+          grad.addColorStop(1, '#ff6a00');
 
           ctx.beginPath();
           ctx.moveTo(startX, startY);

@@ -3025,7 +3025,7 @@ const CarModeView = ()=>{
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
-                        className: "car-stage-main",
+                        className: `car-stage-main ${activeTab === 'player' ? 'car-stage-dashboard-active' : ''}`,
                         children: [
                             activeTab === 'player' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$car$2f$CarHeroPlayer$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CarHeroPlayer"], {
                                 visualizerStyle: visualizerStyle,
@@ -4603,9 +4603,16 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
             const bufferLength = analyserNode ? analyserNode.frequencyBinCount : 128;
             const freqData = new Uint8Array(bufferLength);
             const timeData = new Uint8Array(bufferLength);
-            // Particle system
+            // Particle system matching normal player sunset palette
             const particles = [];
             const particleCount = isFullscreen ? 80 : 45;
+            const sunsetColors = [
+                '#ee0979',
+                '#ff2d55',
+                '#ff6a00',
+                '#ffa040',
+                '#ff5493'
+            ];
             for(let i = 0; i < particleCount; i++){
                 particles.push({
                     x: Math.random() * (canvas.width || 600),
@@ -4613,12 +4620,7 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                     radius: Math.random() * 3 + 1.5,
                     speedX: (Math.random() - 0.5) * 1.4,
                     speedY: (Math.random() - 0.5) * 1.4,
-                    color: [
-                        '#00f5ff',
-                        '#a855f7',
-                        '#ec4899',
-                        '#f59e0b'
-                    ][i % 4],
+                    color: sunsetColors[i % sunsetColors.length],
                     alpha: Math.random() * 0.7 + 0.3,
                     freqIndex: Math.floor(Math.random() * 40)
                 });
@@ -4642,7 +4644,7 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                         }
                         if (sum > 0) hasRealAudio = true;
                     }
-                    // 1. FREQUENCY BARS STYLE (Matching Screen 1: Neon multi-color spectrum: violet -> cyan -> magenta -> orange -> yellow)
+                    // 1. FREQUENCY BARS STYLE (Exact matching normal player: Sunset Magenta/Pink #ee0979 to Radiant Orange #ff6a00)
                     if (currentStyle === 'bars') {
                         const barCount = isFullscreen ? 56 : 38;
                         const totalGap = 3.5 * (barCount - 1);
@@ -4660,32 +4662,13 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                                 magnitude = 0.04;
                             }
                             const barHeight = Math.max(6, magnitude * h * 0.92);
-                            // Multi-color neon palette across spectrum (Screen 1 reference):
-                            // 0.0-0.25: Indigo/Violet -> Cyan
-                            // 0.25-0.55: Cyan -> Magenta/Pink
-                            // 0.55-0.80: Pink -> Orange
-                            // 0.80-1.0: Orange -> Golden Yellow
-                            let topColor = '#00f5ff';
-                            let btmColor = '#3b82f6';
-                            if (progress < 0.22) {
-                                topColor = '#00f5ff';
-                                btmColor = '#4f46e5';
-                            } else if (progress < 0.48) {
-                                topColor = '#a855f7';
-                                btmColor = '#00d2ff';
-                            } else if (progress < 0.72) {
-                                topColor = '#ec4899';
-                                btmColor = '#9333ea';
-                            } else if (progress < 0.88) {
-                                topColor = '#f97316';
-                                btmColor = '#ec4899';
-                            } else {
-                                topColor = '#facc15';
-                                btmColor = '#ea580c';
-                            }
+                            // Sangeetham signature gradient: Deep pink #ee0979 at base to sunset orange #ff6a00 at crest
                             const grad = ctx.createLinearGradient(0, h, 0, h - barHeight);
-                            grad.addColorStop(0, btmColor);
-                            grad.addColorStop(1, topColor);
+                            grad.addColorStop(0, 'rgba(238, 9, 121, 0.95)');
+                            grad.addColorStop(0.55, '#ff2d55');
+                            grad.addColorStop(1, '#ff6a00');
+                            ctx.shadowBlur = isPlaying ? 10 : 0;
+                            ctx.shadowColor = 'rgba(238, 9, 121, 0.45)';
                             ctx.fillStyle = grad;
                             ctx.beginPath();
                             ctx.roundRect(x, h - barHeight, barWidth, barHeight, [
@@ -4695,21 +4678,21 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                                 0
                             ]);
                             ctx.fill();
-                            // Glowing cap dot
-                            ctx.fillStyle = topColor;
+                            // Radiant golden-orange cap dot matching normal player aesthetic
+                            ctx.fillStyle = '#ff8800';
                             ctx.beginPath();
                             ctx.arc(x + barWidth / 2, h - barHeight, Math.min(2.5, barWidth / 2), 0, Math.PI * 2);
                             ctx.fill();
+                            ctx.shadowBlur = 0;
                             x += barWidth + 3.5;
                         }
                     } else if (currentStyle === 'waveform') {
                         ctx.beginPath();
                         ctx.lineWidth = isFullscreen ? 4 : 3;
                         const grad = ctx.createLinearGradient(0, 0, w, 0);
-                        grad.addColorStop(0, '#00f5ff');
-                        grad.addColorStop(0.3, '#a855f7');
-                        grad.addColorStop(0.7, '#ec4899');
-                        grad.addColorStop(1, '#f59e0b');
+                        grad.addColorStop(0, '#ee0979');
+                        grad.addColorStop(0.5, '#ff2d55');
+                        grad.addColorStop(1, '#ff6a00');
                         ctx.strokeStyle = grad;
                         const sliceWidth = w / bufferLength;
                         let x = 0;
@@ -4728,7 +4711,7 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                         }
                         ctx.lineTo(w, h / 2);
                         ctx.shadowBlur = 14;
-                        ctx.shadowColor = '#00d2ff';
+                        ctx.shadowColor = 'rgba(238, 9, 121, 0.65)';
                         ctx.stroke();
                         ctx.shadowBlur = 0;
                     } else if (currentStyle === 'circular') {
@@ -4736,13 +4719,13 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                         const centerY = h / 2;
                         const baseRadius = Math.min(centerX, centerY) * 0.52;
                         const numRays = 52;
-                        // Inner glowing orb
+                        // Inner glowing orb in sunset tones
                         ctx.beginPath();
                         ctx.arc(centerX, centerY, baseRadius * 0.65, 0, 2 * Math.PI);
-                        ctx.fillStyle = 'rgba(0, 210, 255, 0.08)';
+                        ctx.fillStyle = 'rgba(238, 9, 121, 0.08)';
                         ctx.fill();
                         ctx.lineWidth = 2;
-                        ctx.strokeStyle = 'rgba(0, 210, 255, 0.45)';
+                        ctx.strokeStyle = 'rgba(238, 9, 121, 0.45)';
                         ctx.stroke();
                         for(let i = 0; i < numRays; i++){
                             const angle = i / numRays * Math.PI * 2;
@@ -4759,9 +4742,9 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                             const endX = centerX + Math.cos(angle) * (baseRadius + rayLength);
                             const endY = centerY + Math.sin(angle) * (baseRadius + rayLength);
                             const grad = ctx.createLinearGradient(startX, startY, endX, endY);
-                            grad.addColorStop(0, '#00f5ff');
-                            grad.addColorStop(0.5, '#a855f7');
-                            grad.addColorStop(1, '#ec4899');
+                            grad.addColorStop(0, '#ee0979');
+                            grad.addColorStop(0.5, '#ff2d55');
+                            grad.addColorStop(1, '#ff6a00');
                             ctx.beginPath();
                             ctx.moveTo(startX, startY);
                             ctx.lineTo(endX, endY);
@@ -4830,7 +4813,7 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                 className: "car-visualizer-canvas"
             }, void 0, false, {
                 fileName: "[project]/src/components/car/CarVisualizer.tsx",
-                lineNumber: 327,
+                lineNumber: 309,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             onToggleFullscreen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4842,24 +4825,24 @@ const CarVisualizer = ({ currentStyle, onStyleChange, isVisible, className = '',
                     size: 18
                 }, void 0, false, {
                     fileName: "[project]/src/components/car/CarVisualizer.tsx",
-                    lineNumber: 337,
+                    lineNumber: 319,
                     columnNumber: 27
                 }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$maximize$2d$2$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Maximize2$3e$__["Maximize2"], {
                     size: 18
                 }, void 0, false, {
                     fileName: "[project]/src/components/car/CarVisualizer.tsx",
-                    lineNumber: 337,
+                    lineNumber: 319,
                     columnNumber: 53
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/car/CarVisualizer.tsx",
-                lineNumber: 331,
+                lineNumber: 313,
                 columnNumber: 9
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/car/CarVisualizer.tsx",
-        lineNumber: 326,
+        lineNumber: 308,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -4895,30 +4878,30 @@ const STYLES = [
     {
         id: 'bars',
         name: 'Bars',
-        desc: 'Dynamic multi-color frequency bars',
+        desc: 'Sunset pink to orange frequency bars',
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$column$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BarChart3$3e$__["BarChart3"],
-        gradient: 'linear-gradient(135deg, #00f5ff 0%, #ec4899 60%, #f59e0b 100%)'
+        gradient: 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)'
     },
     {
         id: 'waveform',
         name: 'Waveform',
-        desc: 'Neon ribbon oscilloscope wave',
+        desc: 'Sunset ribbon oscilloscope wave',
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$activity$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Activity$3e$__["Activity"],
-        gradient: 'linear-gradient(135deg, #00f5ff 0%, #8b5cf6 50%, #ec4899 100%)'
+        gradient: 'linear-gradient(135deg, #ee0979 0%, #ff2d55 50%, #ff6a00 100%)'
     },
     {
         id: 'circular',
         name: 'Circle',
         desc: 'Glowing radial spectrum ring',
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$disc$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Disc$3e$__["Disc"],
-        gradient: 'radial-gradient(circle, #a855f7 0%, #00d2ff 70%, transparent 100%)'
+        gradient: 'radial-gradient(circle, #ee0979 0%, #ff6a00 70%, transparent 100%)'
     },
     {
         id: 'particles',
         name: 'Particles',
-        desc: 'Cosmic pulsing particle burst',
+        desc: 'Sunset glowing particle burst',
         icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__["Sparkles"],
-        gradient: 'radial-gradient(circle, #f43f5e 0%, #8b5cf6 60%, #00d2ff 100%)'
+        gradient: 'radial-gradient(circle, #ff2d55 0%, #ee0979 60%, #ff6a00 100%)'
     }
 ];
 const CarVisualizerStylesView = ({ currentStyle, onStyleSelect, isVisualizerOn, onToggleVisualizer })=>{
@@ -5084,7 +5067,7 @@ const CarVisualizerStylesView = ({ currentStyle, onStyleSelect, isVisualizerOn, 
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
                                                                 offset: "0%",
-                                                                stopColor: "#00f5ff"
+                                                                stopColor: "#ee0979"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/car/CarVisualizerStylesView.tsx",
                                                                 lineNumber: 124,
@@ -5092,7 +5075,7 @@ const CarVisualizerStylesView = ({ currentStyle, onStyleSelect, isVisualizerOn, 
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
                                                                 offset: "50%",
-                                                                stopColor: "#a855f7"
+                                                                stopColor: "#ff2d55"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/car/CarVisualizerStylesView.tsx",
                                                                 lineNumber: 125,
@@ -5100,7 +5083,7 @@ const CarVisualizerStylesView = ({ currentStyle, onStyleSelect, isVisualizerOn, 
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("stop", {
                                                                 offset: "100%",
-                                                                stopColor: "#ec4899"
+                                                                stopColor: "#ff6a00"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/car/CarVisualizerStylesView.tsx",
                                                                 lineNumber: 126,

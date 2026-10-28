@@ -23,30 +23,30 @@ const STYLES: StyleCardItem[] = [
   {
     id: 'bars',
     name: 'Bars',
-    desc: 'Dynamic multi-color frequency bars',
+    desc: 'Sunset pink to orange frequency bars',
     icon: BarChart3,
-    gradient: 'linear-gradient(135deg, #00f5ff 0%, #ec4899 60%, #f59e0b 100%)'
+    gradient: 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)'
   },
   {
     id: 'waveform',
     name: 'Waveform',
-    desc: 'Neon ribbon oscilloscope wave',
+    desc: 'Sunset ribbon oscilloscope wave',
     icon: Activity,
-    gradient: 'linear-gradient(135deg, #00f5ff 0%, #8b5cf6 50%, #ec4899 100%)'
+    gradient: 'linear-gradient(135deg, #ee0979 0%, #ff2d55 50%, #ff6a00 100%)'
   },
   {
     id: 'circular',
     name: 'Circle',
     desc: 'Glowing radial spectrum ring',
     icon: Disc,
-    gradient: 'radial-gradient(circle, #a855f7 0%, #00d2ff 70%, transparent 100%)'
+    gradient: 'radial-gradient(circle, #ee0979 0%, #ff6a00 70%, transparent 100%)'
   },
   {
     id: 'particles',
     name: 'Particles',
-    desc: 'Cosmic pulsing particle burst',
+    desc: 'Sunset glowing particle burst',
     icon: Sparkles,
-    gradient: 'radial-gradient(circle, #f43f5e 0%, #8b5cf6 60%, #00d2ff 100%)'
+    gradient: 'radial-gradient(circle, #ff2d55 0%, #ee0979 60%, #ff6a00 100%)'
   }
 ];
 
@@ -121,9 +121,9 @@ export const CarVisualizerStylesView: React.FC<CarVisualizerStylesViewProps> = (
                       />
                       <defs>
                         <linearGradient id="previewGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#00f5ff" />
-                          <stop offset="50%" stopColor="#a855f7" />
-                          <stop offset="100%" stopColor="#ec4899" />
+                          <stop offset="0%" stopColor="#ee0979" />
+                          <stop offset="50%" stopColor="#ff2d55" />
+                          <stop offset="100%" stopColor="#ff6a00" />
                         </linearGradient>
                       </defs>
                     </svg>

@@ -2,15 +2,7 @@ import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import '../index.css';
 import { MusicProvider } from '../context/MusicContext';
-import { Navbar } from '../components/Navbar';
-import { BottomNav } from '../components/BottomNav';
-import { PlayerBar } from '../components/PlayerBar';
-import { AIChatModal } from '../components/AIChatModal';
-import { ShareModal } from '../components/ShareModal';
-import { Toast } from '../components/Toast';
-import { FullscreenVisualizer } from '../components/FullscreenVisualizer';
-import { PWAProvider } from '../components/PWAProvider';
-import { Footer } from '../components/Footer';
+import { AppShell } from '../components/AppShell';
 
 export const viewport: Viewport = {
   themeColor: '#0a0a0c',
@@ -50,33 +42,7 @@ export default function RootLayout({
       </head>
       <body>
         <MusicProvider>
-          <div className="app-root">
-            {/* Top Navigation */}
-            <Navbar />
-
-            {/* Dynamic Routed Page Content */}
-            <main className="main-viewport">
-              {children}
-              <Footer />
-            </main>
-
-            {/* Floating Global AI Music Assistant */}
-            <AIChatModal />
-
-            {/* Universal Share Modal & Toast Feedback */}
-            <ShareModal />
-            <Toast />
-            <PWAProvider />
-
-            {/* Immersive Audio-Reactive Particle Fullscreen Visualizer */}
-            <FullscreenVisualizer />
-
-            {/* Bottom Navigation with Link routing */}
-            <BottomNav />
-
-            {/* Persistent Audio Player Bar */}
-            <PlayerBar />
-          </div>
+          <AppShell>{children}</AppShell>
         </MusicProvider>
       </body>
     </html>

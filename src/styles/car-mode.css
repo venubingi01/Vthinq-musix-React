@@ -26,14 +26,34 @@
 }
 
 /* ==========================================================================
-   Master Shell & Workspace
+   Master Shell & Workspace: 100vw x 100vh locked without outer or inner scroll
    ========================================================================== */
+html:has(.car-mode-root),
+body:has(.car-mode-root),
+.car-mode-app-shell {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
 .car-mode-root {
-  display: flex;
-  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
-  min-height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--car-bg-gradient);
   color: var(--car-text-primary);
   font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -44,13 +64,15 @@
   touch-action: manipulation;
   padding: 0;
   margin: 0;
-  position: relative;
-  z-index: 100;
+  z-index: 9999;
 }
 
 .car-workspace-body {
   flex: 1;
   display: flex;
+  min-height: 0;
+  height: calc(100vh - 58px);
+  max-height: calc(100vh - 58px);
   overflow: hidden;
   position: relative;
 }
@@ -248,9 +270,17 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 16px 20px;
+  padding: 14px 18px;
   overflow-y: auto;
   box-sizing: border-box;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.car-stage-main.car-stage-dashboard-active {
+  overflow: hidden !important;
+  padding: 10px 16px;
 }
 
 /* ==========================================================================
@@ -258,13 +288,16 @@
    ========================================================================== */
 .car-hero-screen1-card {
   flex: 1;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: var(--car-card-bg);
   border: 1px solid var(--car-card-border);
-  border-radius: 24px;
-  padding: 18px 24px;
+  border-radius: 20px;
+  padding: 12px 18px;
   box-shadow: var(--car-card-glow);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -275,10 +308,11 @@
 .car-hero-stage-row {
   display: grid;
   grid-template-columns: 0.95fr 1.05fr;
-  gap: 24px;
+  gap: 18px;
   align-items: stretch;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 @media (max-width: 860px) {
@@ -463,7 +497,8 @@
 .car-screen1-visualizer {
   width: 100%;
   height: 100%;
-  min-height: 120px;
+  min-height: 80px;
+  flex: 1;
 }
 
 /* Scrubber Line (Screen 1) */
@@ -471,7 +506,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin: 14px 0 10px;
+  margin: 8px 0 6px;
+  flex-shrink: 0;
 }
 
 .car-hero-time {
@@ -511,7 +547,8 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding-top: 6px;
+  padding-top: 4px;
+  flex-shrink: 0;
 }
 
 .car-hero-ctrls-left {
@@ -734,9 +771,21 @@
 }
 
 @keyframes orb-pulse {
-  0% { transform: scale(0.95); opacity: 0.6; }
-  50% { transform: scale(1.08); opacity: 1; box-shadow: 0 0 65px rgba(0, 210, 255, 0.9); }
-  100% { transform: scale(0.95); opacity: 0.6; }
+  0% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+    box-shadow: 0 0 65px rgba(0, 210, 255, 0.9);
+  }
+
+  100% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
 }
 
 .car-voice-orb-inner {
@@ -778,8 +827,15 @@
 }
 
 @keyframes wave-bar {
-  0% { transform: scaleY(0.3); opacity: 0.4; }
-  100% { transform: scaleY(1.3); opacity: 1; }
+  0% {
+    transform: scaleY(0.3);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scaleY(1.3);
+    opacity: 1;
+  }
 }
 
 .car-voice-live-badge-wrap {
@@ -805,8 +861,15 @@
 }
 
 @keyframes car-voice-pop {
-  0% { transform: scale(0.96); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .car-voice-live-label {
@@ -833,8 +896,15 @@
 }
 
 @keyframes car-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.15; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
 }
 
 .car-voice-waiting-pill {
@@ -858,8 +928,18 @@
 }
 
 @keyframes waiting-dot-pulse {
-  0%, 100% { transform: scale(0.8); opacity: 0.5; }
-  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--car-electric-blue); }
+
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow: 0 0 12px var(--car-electric-blue);
+  }
 }
 
 .car-voice-suggestions-panel {
@@ -1301,22 +1381,44 @@
 .pb-bar {
   width: 8px;
   border-radius: 4px;
-  background: linear-gradient(0deg, #00d2ff, #f59e0b);
+  background: linear-gradient(0deg, #252525, #a3a3a3);
+  box-shadow: 0 0 8px rgba(38, 38, 38, 0.4);
 }
-.pb-bar.b1 { height: 25px; }
-.pb-bar.b2 { height: 42px; }
-.pb-bar.b3 { height: 55px; }
-.pb-bar.b4 { height: 48px; }
-.pb-bar.b5 { height: 35px; }
-.pb-bar.b6 { height: 52px; }
-.pb-bar.b7 { height: 28px; }
+
+.pb-bar.b1 {
+  height: 25px;
+}
+
+.pb-bar.b2 {
+  height: 42px;
+}
+
+.pb-bar.b3 {
+  height: 55px;
+}
+
+.pb-bar.b4 {
+  height: 48px;
+}
+
+.pb-bar.b5 {
+  height: 35px;
+}
+
+.pb-bar.b6 {
+  height: 52px;
+}
+
+.pb-bar.b7 {
+  height: 28px;
+}
 
 .preview-circle-wrap {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 3px solid #00f5ff;
-  box-shadow: 0 0 16px #00f5ff;
+  border: 3px solid #ee0979;
+  box-shadow: 0 0 16px rgba(238, 9, 121, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1326,7 +1428,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #a855f7;
+  background: linear-gradient(135deg, #ee0979, #ff6a00);
 }
 
 .preview-particles-wrap {
@@ -1338,13 +1440,53 @@
 .p-dot {
   position: absolute;
   border-radius: 50%;
-  background: #00f5ff;
+  background: #ee0979;
 }
-.p-dot.d1 { width: 8px; height: 8px; top: 10px; left: 20px; background: #ec4899; }
-.p-dot.d2 { width: 12px; height: 12px; top: 30px; left: 35px; background: #00f5ff; }
-.p-dot.d3 { width: 6px; height: 6px; top: 45px; left: 15px; background: #a855f7; }
-.p-dot.d4 { width: 10px; height: 10px; top: 15px; left: 50px; background: #f59e0b; }
-.p-dot.d5 { width: 7px; height: 7px; top: 40px; left: 55px; background: #00f5ff; }
+
+.p-dot.d1 {
+  width: 8px;
+  height: 8px;
+  top: 10px;
+  left: 20px;
+  background: #ee0979;
+  box-shadow: 0 0 6px #ee0979;
+}
+
+.p-dot.d2 {
+  width: 12px;
+  height: 12px;
+  top: 30px;
+  left: 35px;
+  background: #ff6a00;
+  box-shadow: 0 0 8px #ff6a00;
+}
+
+.p-dot.d3 {
+  width: 6px;
+  height: 6px;
+  top: 45px;
+  left: 15px;
+  background: #ff2d55;
+  box-shadow: 0 0 5px #ff2d55;
+}
+
+.p-dot.d4 {
+  width: 10px;
+  height: 10px;
+  top: 15px;
+  left: 50px;
+  background: #ff8800;
+  box-shadow: 0 0 7px #ff8800;
+}
+
+.p-dot.d5 {
+  width: 7px;
+  height: 7px;
+  top: 40px;
+  left: 55px;
+  background: #ee0979;
+  box-shadow: 0 0 6px #ee0979;
+}
 
 /* ==========================================================================
    Screen 5: Equalizer – Custom Bands and Presets
@@ -1695,13 +1837,30 @@
   background: var(--car-electric-blue);
   animation: q-bar 0.8s infinite alternate ease-in-out;
 }
-.q8-bar.b1 { height: 10px; animation-delay: 0.1s; }
-.q8-bar.b2 { height: 16px; animation-delay: 0.3s; }
-.q8-bar.b3 { height: 8px; animation-delay: 0.2s; }
+
+.q8-bar.b1 {
+  height: 10px;
+  animation-delay: 0.1s;
+}
+
+.q8-bar.b2 {
+  height: 16px;
+  animation-delay: 0.3s;
+}
+
+.q8-bar.b3 {
+  height: 8px;
+  animation-delay: 0.2s;
+}
 
 @keyframes q-bar {
-  0% { transform: scaleY(0.4); }
-  100% { transform: scaleY(1.2); }
+  0% {
+    transform: scaleY(0.4);
+  }
+
+  100% {
+    transform: scaleY(1.2);
+  }
 }
 
 /* ==========================================================================
@@ -1817,8 +1976,17 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.15); }
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 }
 
 .car-lyric-line.past {
@@ -2198,13 +2366,29 @@
   animation: car-eq-bounce 0.8s infinite ease-in-out alternate;
 }
 
-.car-fav-equalizer-bars .bar-1 { height: 16px; animation-delay: 0.1s; }
-.car-fav-equalizer-bars .bar-2 { height: 20px; animation-delay: 0.3s; }
-.car-fav-equalizer-bars .bar-3 { height: 12px; animation-delay: 0.5s; }
+.car-fav-equalizer-bars .bar-1 {
+  height: 16px;
+  animation-delay: 0.1s;
+}
+
+.car-fav-equalizer-bars .bar-2 {
+  height: 20px;
+  animation-delay: 0.3s;
+}
+
+.car-fav-equalizer-bars .bar-3 {
+  height: 12px;
+  animation-delay: 0.5s;
+}
 
 @keyframes car-eq-bounce {
-  0% { transform: scaleY(0.3); }
-  100% { transform: scaleY(1.2); }
+  0% {
+    transform: scaleY(0.3);
+  }
+
+  100% {
+    transform: scaleY(1.2);
+  }
 }
 
 .car-fav-art-wrap {
@@ -2383,8 +2567,13 @@
 }
 
 @keyframes car-fav-ring-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .car-fav-empty-icon {
@@ -2395,10 +2584,23 @@
 }
 
 @keyframes car-fav-heart-beat {
-  0%, 100% { transform: scale(1); }
-  15% { transform: scale(1.12); }
-  30% { transform: scale(1.02); }
-  45% { transform: scale(1.1); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.12);
+  }
+
+  30% {
+    transform: scale(1.02);
+  }
+
+  45% {
+    transform: scale(1.1);
+  }
 }
 
 .car-fav-empty-title {
@@ -2448,6 +2650,7 @@
    Reduced Motion
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

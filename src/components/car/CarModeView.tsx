@@ -408,7 +408,7 @@ export const CarModeView: React.FC = () => {
         </aside>
 
         {/* Central Stage View */}
-        <main className="car-stage-main">
+        <main className={`car-stage-main ${activeTab === 'player' ? 'car-stage-dashboard-active' : ''}`}>
           {/* TAB 1: HERO PLAYER (Screen 1) */}
           {activeTab === 'player' && (
             <CarHeroPlayer
