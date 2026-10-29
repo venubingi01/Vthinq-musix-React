@@ -6,11 +6,13 @@ import { Navbar } from './Navbar';
 import { BottomNav } from './BottomNav';
 import { PlayerBar } from './PlayerBar';
 import { AIChatModal } from './AIChatModal';
+import { AIFloatingButton } from './AIFloatingButton';
 import { ShareModal } from './ShareModal';
 import { Toast } from './Toast';
 import { FullscreenVisualizer } from './FullscreenVisualizer';
 import { PWAProvider } from './PWAProvider';
 import { Footer } from './Footer';
+import { VoiceSearchModal } from './VoiceSearchModal';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -24,6 +26,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     return (
       <div className="car-mode-app-shell">
         {children}
+        <AIChatModal />
+        <AIFloatingButton />
+        <VoiceSearchModal />
         <Toast />
         <PWAProvider />
       </div>
@@ -41,8 +46,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <Footer />
       </main>
 
+      {/* Fixed Floating AI Chat Trigger */}
+      <AIFloatingButton />
+
       {/* Floating Global AI Music Assistant */}
       <AIChatModal />
+
+      {/* Interactive ChatGPT-Style Voice Search Modal */}
+      <VoiceSearchModal />
 
       {/* Universal Share Modal & Toast Feedback */}
       <ShareModal />

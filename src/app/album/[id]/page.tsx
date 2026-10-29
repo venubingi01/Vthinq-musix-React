@@ -1,12 +1,21 @@
-'use client';
-
 import React from 'react';
-import { useParams } from 'next/navigation';
-import { AlbumView } from '../../../components/AlbumView';
+import { AlbumClientPage } from './AlbumClientPage';
 
-export default function DynamicAlbumPage() {
-  const params = useParams();
-  const albumId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string) || 'alb_ala_vaikunthapurramuloo';
+export function generateStaticParams() {
+  return [
+    { id: 'alb_ala_vaikunthapurramuloo' },
+    { id: 'alb_brahmastra' },
+    { id: 'alb_jawan' },
+    { id: 'alb_devotional_classics' },
+    { id: 'default' }
+  ];
+}
 
-  return <AlbumView albumId={albumId} />;
+export default async function DynamicAlbumPage({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = await params;
+  return <AlbumClientPage initialAlbumId={resolvedParams?.id || 'alb_ala_vaikunthapurramuloo'} />;
 }

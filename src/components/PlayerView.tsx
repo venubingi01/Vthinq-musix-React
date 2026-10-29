@@ -24,8 +24,23 @@ import {
   Share2,
   Sparkles
 } from 'lucide-react';
+import { MobilePlayerView, MobileTab } from './mobile/MobilePlayerView';
 
-export const PlayerView: React.FC = () => {
+interface PlayerViewProps {
+  initialMobileTab?: MobileTab;
+}
+
+export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-playing' }) => {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const {
     currentSong,
     currentTime,
@@ -34,7 +49,9 @@ export const PlayerView: React.FC = () => {
     toggleFavorite,
     isFavorite,
     openShareModal,
-    openFullscreenVisualizer
+    openFullscreenVisualizer,
+    lyrics,
+    isLyricsLoading
   } = useMusic();
 
   // Video & View states (defaults to visualizer with synced lyrical video)
@@ -48,14 +65,11 @@ export const PlayerView: React.FC = () => {
   // Video canvas iframe reference for bidirectional postMessage control
   const canvasIframeRef = useRef<HTMLIFrameElement | null>(null);
   const lastTimeRef = useRef<number>(currentTime);
-
-  // Lyrics states
-  const [lyrics, setLyrics] = useState<TimedLyric[]>([]);
-  const [isLyricsLoading, setIsLyricsLoading] = useState<boolean>(false);
   const activeLineRef = useRef<HTMLDivElement | null>(null);
 
-  // 1. Fetch Music Video ID whenever song changes
+  // 1. Fetch Music Video ID whenever song changes (clear immediately to prevent showing old video)
   useEffect(() => {
+    setVideoId(null);
     if (!currentSong) return;
 
     let isMounted = true;
@@ -71,31 +85,6 @@ export const PlayerView: React.FC = () => {
       .catch(() => {
         if (isMounted) {
           setIsVideoLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentSong?.id]);
-
-  // 2. Fetch Synced Lyrics whenever song changes
-  useEffect(() => {
-    if (!currentSong) return;
-
-    let isMounted = true;
-    setIsLyricsLoading(true);
-
-    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
-      .then((data) => {
-        if (isMounted) {
-          setLyrics(data);
-          setIsLyricsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setIsLyricsLoading(false);
         }
       });
 
@@ -220,7 +209,12 @@ export const PlayerView: React.FC = () => {
   };
 
   return (
-    <div className="player-view-wrapper">
+    <>
+      <div className="mobile-player-viewport-only">
+        <MobilePlayerView initialTab={initialMobileTab} />
+      </div>
+      <div className="desktop-player-viewport-only">
+        <div className="player-view-wrapper">
       {/* Background ambient album cover blur */}
       <div
         className="player-ambient-bg"
@@ -584,5 +578,7 @@ export const PlayerView: React.FC = () => {
       {/* Playlist Queue Drawer Modal */}
       <QueueModal isOpen={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
     </div>
+  </div>
+</>
   );
 };

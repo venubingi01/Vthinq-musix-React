@@ -5,35 +5,8 @@ import type { TimedLyric } from '../types/music';
 import { Quote, Loader2, Music2, AlignLeft } from 'lucide-react';
 
 export const LyricsView: React.FC = () => {
-  const { currentSong, currentTime, seek } = useMusic();
-  const [lyrics, setLyrics] = useState<TimedLyric[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const { currentSong, currentTime, seek, lyrics, isLyricsLoading: loading } = useMusic();
   const activeLineRef = useRef<HTMLDivElement | null>(null);
-
-  // Fetch lyrics whenever currentSong changes
-  useEffect(() => {
-    if (!currentSong) return;
-
-    let isMounted = true;
-    setLoading(true);
-
-    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
-      .then((data) => {
-        if (isMounted) {
-          setLyrics(data);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentSong?.id]);
 
   const isPlain = isPlainLyrics(lyrics);
 

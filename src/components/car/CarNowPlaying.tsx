@@ -47,6 +47,7 @@ export const CarNowPlaying: React.FC = () => {
         <div className="car-artwork-container">
           {currentSong.image ? (
             <img
+              key={currentSong.id}
               src={currentSong.image}
               alt={songTitle}
               className={`car-album-art ${isPlaying ? 'playing' : ''}`}

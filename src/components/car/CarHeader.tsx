@@ -2,15 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useMusic } from '../../context/MusicContext';
 import {
   Music2,
-  Wifi,
-  WifiOff,
   LogOut,
-  Bluetooth,
-  Signal,
-  BatteryCharging,
-  Car
+  Sparkles
 } from 'lucide-react';
 
 interface CarHeaderProps {
@@ -18,8 +14,8 @@ interface CarHeaderProps {
 }
 
 export const CarHeader: React.FC<CarHeaderProps> = ({ onExit }) => {
+  const { setIsAiChatOpen } = useMusic();
   const [timeStr, setTimeStr] = useState<string>('10:24 AM');
-  const [isOnline, setIsOnline] = useState<boolean>(true);
 
   // Real digital clock
   useEffect(() => {
@@ -39,23 +35,6 @@ export const CarHeader: React.FC<CarHeaderProps> = ({ onExit }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Real system online / offline connectivity
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setIsOnline(navigator.onLine);
-
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
   return (
     <header className="car-header">
       {/* Brand & Car Mode Label */}
@@ -73,35 +52,13 @@ export const CarHeader: React.FC<CarHeaderProps> = ({ onExit }) => {
         </Link>
       </div>
 
-      {/* Right Infotainment Status Bar (Matching reference board) */}
+      {/* Right Infotainment Status Bar */}
       <div className="car-header-right">
+
         {/* Time display */}
         <span className="car-clock-display" aria-label={`Current time: ${timeStr}`}>
           {timeStr}
         </span>
-
-        {/* Connectivity status group */}
-        <div className="car-system-icons-group">
-          {/* Bluetooth Icon */}
-          <div className="car-sys-icon active" title="Bluetooth Audio Connected">
-            <Bluetooth size={18} />
-          </div>
-
-          {/* Cellular / Wi-Fi Signal */}
-          <div className={`car-sys-icon ${isOnline ? 'active' : 'offline'}`} title={isOnline ? 'Cellular 4G/5G Online' : 'Offline'}>
-            {isOnline ? <Signal size={18} /> : <WifiOff size={18} />}
-          </div>
-
-          {/* Battery Status */}
-          <div className="car-sys-icon active" title="Vehicle Power Good">
-            <BatteryCharging size={18} />
-          </div>
-
-          {/* Vehicle Indicator */}
-          <div className="car-sys-icon car-vehicle-icon active" title="Vehicle Cockpit System">
-            <Car size={19} />
-          </div>
-        </div>
 
         {/* Exit Car Mode Link */}
         <Link

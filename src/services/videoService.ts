@@ -12,7 +12,11 @@ const STARTER_VIDEO_MAP: Record<string, string> = {
   starter_2: 'mevbq1cZpQk', // Samajavaragamana Video
   starter_3: '2mDCVzruYzQ', // Butta Bomma Video
   starter_4: 'VAdGW7QDJhU', // Chaleya Official Video
-  starter_5: '1F3hm636S2k'  // Hukum Jailer Video
+  starter_5: '1F3hm636S2k', // Hukum Jailer Video
+  telugu_hits_1: '2mDCVzruYzQ', // Manasavacha video fallback
+  telugu_hits_2: 'mevbq1cZpQk',
+  telugu_hits_3: 'VAdGW7QDJhU',
+  telugu_hits_4: 'BddP6PYo2gs'
 };
 
 const videoCache = new Map<string, string>();

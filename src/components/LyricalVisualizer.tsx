@@ -111,41 +111,17 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
     isPlaying,
     seek,
     analyserNode,
-    openFullscreenVisualizer
+    openFullscreenVisualizer,
+    lyrics: contextLyrics,
+    isLyricsLoading: contextIsLyricsLoading
   } = useMusic();
 
   const [currentThemeKey, setCurrentThemeKey] = useState<LyricalThemeKey>(initialTheme);
   const theme = LYRICAL_THEMES[currentThemeKey];
 
-  // Synced lyrics fetching
-  const [lyricsList, setLyricsList] = useState<TimedLyric[]>(propLyrics || []);
-  const [isLoadingLyrics, setIsLoadingLyrics] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (propLyrics && propLyrics.length > 0) {
-      setLyricsList(propLyrics);
-      return;
-    }
-    if (!currentSong) return;
-
-    let isMounted = true;
-    setIsLoadingLyrics(true);
-
-    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
-      .then((data) => {
-        if (isMounted) {
-          setLyricsList(data);
-          setIsLoadingLyrics(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) setIsLoadingLyrics(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentSong?.id, propLyrics]);
+  // Effective lyrics list from prop or synchronized context
+  const lyricsList = (propLyrics && propLyrics.length > 0) ? propLyrics : contextLyrics;
+  const isLoadingLyrics = contextIsLyricsLoading;
 
   const isPlain = useMemo(() => isPlainLyrics(lyricsList), [lyricsList]);
 
@@ -411,6 +387,7 @@ export const LyricalVisualizer: React.FC<LyricalVisualizerProps> = ({
                 style={{ backgroundImage: `url(${currentSong.image})` }}
               >
                 <img
+                  key={currentSong.id}
                   src={currentSong.image}
                   alt={currentSong.name}
                   className="portrait-cover-img"

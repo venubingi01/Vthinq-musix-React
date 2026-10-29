@@ -4,5 +4,5 @@ import React from 'react';
 import { PlayerView } from '../../components/PlayerView';
 
 export default function LyricsPage() {
-  return <PlayerView />;
+  return <PlayerView initialMobileTab="lyrics" />;
 }

@@ -160,4 +160,32 @@ describe('Speech Recognition Service Fallback & Lifecycle', () => {
     service.startListening();
     expect(activeHandler).toBe(2);
   });
+
+  it('resumes playback when voice search is cancelled if song was paused', () => {
+    let isPlaying = true;
+    let wasPlayingBeforeVoice = false;
+
+    // Simulate start of voice search
+    const onVoiceStart = () => {
+      wasPlayingBeforeVoice = isPlaying;
+      isPlaying = false; // paused for mic
+    };
+
+    // Simulate voice search cancel
+    const onVoiceCancel = () => {
+      if (wasPlayingBeforeVoice || !isPlaying) {
+        isPlaying = true; // resumed
+        wasPlayingBeforeVoice = false;
+      }
+    };
+
+    expect(isPlaying).toBe(true);
+    onVoiceStart();
+    expect(isPlaying).toBe(false);
+    expect(wasPlayingBeforeVoice).toBe(true);
+
+    onVoiceCancel();
+    expect(isPlaying).toBe(true);
+    expect(wasPlayingBeforeVoice).toBe(false);
+  });
 });

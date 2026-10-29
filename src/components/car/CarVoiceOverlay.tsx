@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Mic, X, ChevronRight } from 'lucide-react';
+import { Mic, X } from 'lucide-react';
 import type { VoiceStatus } from '../../services/voiceCommandService';
 
 interface CarVoiceOverlayProps {
@@ -11,14 +11,12 @@ interface CarVoiceOverlayProps {
   onQuickCommand?: (cmd: string) => void;
 }
 
-const SAMPLE_COMMANDS = [
-  'Play Kesariya',
-  'Play Arijit Singh songs',
-  'Next song',
-  'Previous song',
-  'Pause music',
-  'Show visualizer',
-  'Open equalizer'
+const SAMPLE_COMMANDS_SCREEN8 = [
+  'Play Nuvvunte Naa Jathaga',
+  'Who composed this song?',
+  '1-hour driving playlist',
+  'Play Telugu love songs',
+  'Play devotional songs'
 ];
 
 export const CarVoiceOverlay: React.FC<CarVoiceOverlayProps> = ({
@@ -30,74 +28,62 @@ export const CarVoiceOverlay: React.FC<CarVoiceOverlayProps> = ({
   if (status !== 'listening' && status !== 'processing') return null;
 
   return (
-    <div className="car-voice-screen2-overlay" role="dialog" aria-modal="true" aria-label="Voice Command Active">
-      {/* Top right Cancel Button */}
-      <button className="car-voice-cancel-top-btn" onClick={onCancel} aria-label="Cancel voice command">
-        <X size={18} />
-        <span>Cancel</span>
+    <div
+      className="car-voice-screen8-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Voice Command Active"
+    >
+      {/* Top right Close Button matching Screen 8 */}
+      <button
+        className="car-voice-screen8-close-btn"
+        onClick={onCancel}
+        aria-label="Close voice search"
+      >
+        <X size={26} />
       </button>
 
-      <div className="car-voice-screen2-content">
-        {/* Center: Glowing Pulse Orb & Waveform */}
-        <div className="car-voice-orb-section">
-          <div className="car-voice-giant-orb">
-            <div className="car-voice-orb-glow-ring" />
-            <div className="car-voice-orb-inner">
-              <Mic size={54} className="car-voice-orb-mic-icon" />
+      <div className="car-voice-screen8-body">
+        {/* Giant Glowing Pulsing Pink Microphone Orb */}
+        <div className="car-voice-screen8-orb-wrapper">
+          <div className="car-voice-screen8-pulse-ring-outer" />
+          <div className="car-voice-screen8-pulse-ring-inner" />
+          <div className="car-voice-screen8-mic-circle">
+            <div className="car-voice-soundbars-cluster">
+              <span className="car-voice-bar b1" />
+              <span className="car-voice-bar b2" />
+              <span className="car-voice-bar b3" />
+              <span className="car-voice-bar b4" />
+              <span className="car-voice-bar b5" />
             </div>
-          </div>
-
-          <h2 className="car-voice-listening-title">
-            {status === 'processing' ? 'Processing...' : 'Listening...'}
-          </h2>
-
-          {/* Animated Audio Waveform beneath Orb */}
-          <div className="car-voice-waveform-bars">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <div
-                key={i}
-                className="car-voice-wave-bar"
-                style={{
-                  animationDelay: `${(i * 0.08) % 1}s`,
-                  height: `${Math.sin(i * 0.4) * 20 + 26}px`
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Real-time Live Speech Printing as user speaks */}
-          <div className="car-voice-live-badge-wrap">
-            {transcript ? (
-              <div className="car-voice-live-transcript">
-                <span className="car-voice-live-label">{status === 'processing' ? 'Command:' : 'Heard:'}</span>
-                <span className="car-voice-live-text">&ldquo;{transcript}&rdquo;</span>
-                {status === 'listening' && <span className="car-voice-live-cursor" />}
-              </div>
-            ) : (
-              <div className="car-voice-waiting-pill">
-                <span className="car-voice-waiting-pulse" />
-                <span>Listening for speech... (Say song, artist, or command)</span>
-              </div>
-            )}
+            <Mic size={36} className="car-voice-screen8-mic-icon" />
           </div>
         </div>
 
-        {/* Right Panel: Try saying suggestions (Screen 2) */}
-        <div className="car-voice-suggestions-panel">
-          <h3 className="car-voice-sugg-title">Try saying:</h3>
-          <div className="car-voice-sugg-list">
-            {SAMPLE_COMMANDS.map((cmd) => (
-              <button
-                key={cmd}
-                className="car-voice-sugg-item"
-                onClick={() => onQuickCommand && onQuickCommand(cmd)}
-                title={`Try saying: ${cmd}`}
-              >
-                <ChevronRight size={16} className="text-electric-blue" />
-                <span>{cmd}</span>
-              </button>
-            ))}
+        {/* Listening... Title */}
+        <h2 className="car-voice-screen8-title">
+          {status === 'processing' ? 'Processing...' : 'Listening...'}
+        </h2>
+
+        {/* Live speech transcript if available */}
+        {transcript && (
+          <div className="car-voice-screen8-transcript">
+            &ldquo;{transcript}&rdquo;
           </div>
+        )}
+
+        {/* Suggested Voice Commands matching Screen 8 */}
+        <div className="car-voice-screen8-commands-box">
+          {SAMPLE_COMMANDS_SCREEN8.map((cmd) => (
+            <button
+              key={cmd}
+              className="car-voice-screen8-cmd-btn"
+              onClick={() => onQuickCommand && onQuickCommand(cmd)}
+              title={`Try saying: ${cmd}`}
+            >
+              &ldquo;{cmd}&rdquo;
+            </button>
+          ))}
         </div>
       </div>
     </div>

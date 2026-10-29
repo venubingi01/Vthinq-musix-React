@@ -6,10 +6,12 @@ import {
   VoiceRecognitionService,
   speakVoiceFeedback,
   ParsedVoiceCommand,
+  parseVoiceCommand,
   VoiceStatus,
   VoiceServiceState
 } from '../../services/voiceCommandService';
 import { searchSongs } from '../../services/sangeethamApi';
+import { processAIChatMessage } from '../../services/aiOrchestratorService';
 import type { Song } from '../../types/music';
 
 import { CarHeader } from './CarHeader';
@@ -24,15 +26,23 @@ import { CarFavoritesView } from './CarFavoritesView';
 import { CarVoiceOverlay } from './CarVoiceOverlay';
 import { CarFullscreenVisualizer } from './CarFullscreenVisualizer';
 import { CarStatusBanner } from './CarStatusBanner';
+import { FullscreenVideoModal } from '../FullscreenVideoModal';
+import { searchMusicVideo } from '../../services/videoService';
 
+import Link from 'next/link';
 import {
+  Home,
+  Music2,
+  Mic,
   PlayCircle,
   BarChart3,
   Quote,
   Sliders,
   ListMusic,
   Search,
-  Heart
+  Heart,
+  Sparkles,
+  Video
 } from 'lucide-react';
 import '../../styles/car-mode.css';
 
@@ -40,15 +50,18 @@ export type CarNavTab = 'player' | 'visualizer' | 'lyrics' | 'equalizer' | 'queu
 
 export const CarModeView: React.FC = () => {
   const {
+    currentSong,
     playSong,
     togglePlay,
     pauseSong,
+    resumeSong,
     nextSong,
     prevSong,
     isPlaying,
     applyEqPreset,
     setBassBoost,
-    setSpatial3D
+    setSpatial3D,
+    setIsAiChatOpen
   } = useMusic();
 
   // Navigation tab state
@@ -58,6 +71,48 @@ export const CarModeView: React.FC = () => {
   const [visualizerStyle, setVisualizerStyle] = useState<CarVisualizerStyle>('bars');
   const [isVisualizerOn, setIsVisualizerOn] = useState<boolean>(true);
   const [isFullscreenVizOpen, setIsFullscreenVizOpen] = useState<boolean>(false);
+
+  // Video State
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
+  const [videoId, setVideoId] = useState<string | null>(null);
+  const [isVideoLoading, setIsVideoLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    setVideoId(null);
+    if (!currentSong) return;
+    let isMounted = true;
+    setIsVideoLoading(true);
+
+    searchMusicVideo(currentSong.id, currentSong.name, currentSong.artist)
+      .then((id) => {
+        if (isMounted) {
+          setVideoId(id);
+          setIsVideoLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setIsVideoLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentSong?.id]);
+
+  const handleWatchVideo = async () => {
+    if (!videoId && currentSong) {
+      setIsVideoLoading(true);
+      try {
+        const id = await searchMusicVideo(currentSong.id, currentSong.name, currentSong.artist);
+        setVideoId(id);
+      } catch (err) {
+        console.warn('Video search failed:', err);
+      } finally {
+        setIsVideoLoading(false);
+      }
+    }
+    setIsVideoModalOpen(true);
+  };
 
   // Search states
   const [searchQuery, setSearchQuery] = useState<string>('Play Arijit Singh songs');
@@ -97,6 +152,7 @@ export const CarModeView: React.FC = () => {
           break;
 
         case 'pause':
+          wasPlayingBeforeVoiceRef.current = false;
           if (isPlaying) {
             togglePlay();
             displayStatus('Playback paused ⏸️');
@@ -106,23 +162,28 @@ export const CarModeView: React.FC = () => {
           break;
 
         case 'resume':
-          if (!isPlaying) {
-            togglePlay();
-            displayStatus('Music playing ▶️');
-          } else {
-            displayStatus('Music is already playing');
-          }
+          wasPlayingBeforeVoiceRef.current = true;
+          resumeSongRef.current();
+          displayStatus('Music playing ▶️');
           break;
 
         case 'show_visualizer':
           setIsVisualizerOn(true);
           setActiveTab('visualizer');
           displayStatus('Audio visualizer enabled 📊');
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
+          }
           break;
 
         case 'hide_visualizer':
           setIsVisualizerOn(false);
           displayStatus('Audio visualizer hidden');
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
+          }
           break;
 
         case 'change_visualizer':
@@ -131,16 +192,28 @@ export const CarModeView: React.FC = () => {
             setIsVisualizerOn(true);
             displayStatus(`Visualizer set to ${cmd.visualizerStyle} ✨`);
           }
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
+          }
           break;
 
         case 'open_equalizer':
           setActiveTab('equalizer');
           displayStatus('Equalizer opened 🎚️');
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
+          }
           break;
 
         case 'close_equalizer':
           setActiveTab('player');
           displayStatus('Equalizer closed');
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
+          }
           break;
 
         case 'reset_equalizer':
@@ -148,6 +221,10 @@ export const CarModeView: React.FC = () => {
           setBassBoost(0);
           setSpatial3D(false);
           displayStatus('Equalizer reset to Flat ⚖️');
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
+          }
           break;
 
         case 'set_eq_preset':
@@ -164,6 +241,10 @@ export const CarModeView: React.FC = () => {
             } else {
               displayStatus(`Preset "${cmd.preset}" not found`);
             }
+          }
+          if (wasPlayingBeforeVoiceRef.current) {
+            resumeSongRef.current();
+            wasPlayingBeforeVoiceRef.current = false;
           }
           break;
 
@@ -208,10 +289,66 @@ export const CarModeView: React.FC = () => {
           }
           break;
 
-        default:
-          displayStatus(`Could not understand: "${cmd.rawTranscript}". Try again.`, 'error');
-          speakVoiceFeedback('Could not understand. Try again.');
+        default: {
+          displayStatus(`Asking Sangeetham AI: "${cmd.rawTranscript}"...`, 'processing');
+          try {
+            const aiRes = await processAIChatMessage({
+              message: cmd.rawTranscript,
+              activeTrack: currentSongRef.current
+                ? {
+                    id: currentSongRef.current.id,
+                    name: currentSongRef.current.name,
+                    artist: currentSongRef.current.artist,
+                    album: currentSongRef.current.album,
+                    language: currentSongRef.current.language
+                  }
+                : undefined
+            });
+
+            if (aiRes.playbackCommand) {
+              if (
+                aiRes.playbackCommand.action === 'play' &&
+                aiRes.generatedPlaylist &&
+                aiRes.generatedPlaylist.songs.length > 0
+              ) {
+                playSong(aiRes.generatedPlaylist.songs[0], aiRes.generatedPlaylist.songs);
+                displayStatus(`Playing ${aiRes.generatedPlaylist.title}`, 'success');
+                speakVoiceFeedback(`Playing ${aiRes.generatedPlaylist.title}`);
+                return;
+              }
+            }
+
+            if (aiRes.generatedPlaylist && aiRes.generatedPlaylist.songs.length > 0) {
+              playSong(aiRes.generatedPlaylist.songs[0], aiRes.generatedPlaylist.songs);
+              displayStatus(`Playing: ${aiRes.generatedPlaylist.title}`, 'success');
+              speakVoiceFeedback(`Now playing ${aiRes.generatedPlaylist.title}`);
+              return;
+            }
+
+            if (aiRes.songFactSheet) {
+              const brief = `${aiRes.songFactSheet.songTitle} is sung by ${aiRes.songFactSheet.singers.join(', ')} and composed by ${aiRes.songFactSheet.musicDirectors.join(', ')}.`;
+              displayStatus(brief, 'success');
+              speakVoiceFeedback(brief);
+              if (wasPlayingBeforeVoiceRef.current) {
+                setTimeout(() => resumeSongRef.current(), 4000);
+                wasPlayingBeforeVoiceRef.current = false;
+              }
+              return;
+            }
+
+            const cleanReply = aiRes.replyText.replace(/[*_#`]/g, '').slice(0, 100);
+            displayStatus(cleanReply, 'success');
+            speakVoiceFeedback(cleanReply);
+            if (wasPlayingBeforeVoiceRef.current) {
+              setTimeout(() => resumeSongRef.current(), 3500);
+              wasPlayingBeforeVoiceRef.current = false;
+            }
+          } catch {
+            displayStatus(`Could not understand: "${cmd.rawTranscript}". Try again.`, 'error');
+            speakVoiceFeedback('Could not understand. Try again.');
+          }
           break;
+        }
       }
     },
     [
@@ -234,6 +371,26 @@ export const CarModeView: React.FC = () => {
   const pauseSongRef = useRef(pauseSong);
   pauseSongRef.current = pauseSong;
 
+  const resumeSongRef = useRef(resumeSong);
+  resumeSongRef.current = resumeSong;
+
+  const isPlayingRef = useRef<boolean>(isPlaying);
+  isPlayingRef.current = isPlaying;
+
+  const currentSongRef = useRef(currentSong);
+  currentSongRef.current = currentSong;
+
+  // Track if a song was actively playing before voice search interrupted it
+  const wasPlayingBeforeVoiceRef = useRef<boolean>(false);
+
+  // Resume playback if voice search is cancelled, dismissed, or ends without play command
+  const resumePlaybackIfPaused = useCallback(() => {
+    if (wasPlayingBeforeVoiceRef.current || (currentSongRef.current && !isPlayingRef.current)) {
+      resumeSongRef.current();
+      wasPlayingBeforeVoiceRef.current = false;
+    }
+  }, []);
+
   // Initialize Voice Service ONCE on mount
   useEffect(() => {
     const handleVoiceState = (state: VoiceServiceState) => {
@@ -244,16 +401,26 @@ export const CarModeView: React.FC = () => {
       }
       // When voice command starts listening, immediately pause song
       if (state.status === 'listening') {
+        if (isPlayingRef.current) {
+          wasPlayingBeforeVoiceRef.current = true;
+        }
         pauseSongRef.current();
-      } else if (state.status === 'error') {
+      } else if (state.status === 'error' || state.status === 'permission_denied' || state.status === 'unsupported') {
         speakVoiceFeedback('No results found. Try again.');
+        // Resume song if voice search errored or aborted without a command
+        resumePlaybackIfPaused();
       }
     };
 
     const service = new VoiceRecognitionService(
       handleVoiceState,
       (cmd) => handleExecuteVoiceCommandRef.current(cmd),
-      () => pauseSongRef.current()
+      () => {
+        if (isPlayingRef.current) {
+          wasPlayingBeforeVoiceRef.current = true;
+        }
+        pauseSongRef.current();
+      }
     );
     voiceServiceRef.current = service;
 
@@ -261,16 +428,20 @@ export const CarModeView: React.FC = () => {
       service.stop();
       if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
     };
-  }, []);
+  }, [resumePlaybackIfPaused]);
 
   const handleVoiceTap = () => {
     if (voiceStatus === 'listening' || voiceStatus === 'processing') {
+      // User tapped voice button again to cancel/stop active voice search
       voiceServiceRef.current?.stop();
       setVoiceStatus('idle');
       setVoiceMessage(null);
       setVoiceTranscript('');
+      // If voice search cancelled, the song should play again if it is paused
+      resumePlaybackIfPaused();
     } else {
-      // Pause song immediately when voice command is clicked
+      // Starting voice search: track if song is currently playing before pausing
+      wasPlayingBeforeVoiceRef.current = isPlayingRef.current;
       pauseSong();
       setVoiceTranscript('');
       // Brief 50ms tick to let audio engine pause before mic engages hardware capture
@@ -285,16 +456,15 @@ export const CarModeView: React.FC = () => {
     setVoiceStatus('idle');
     setVoiceMessage(null);
     setVoiceTranscript('');
+    // If voice search cancelled, the song should play again if it is paused
+    resumePlaybackIfPaused();
   };
 
   const handleQuickVoiceCommand = (text: string) => {
     voiceServiceRef.current?.stop();
     setVoiceStatus('processing');
-    handleExecuteVoiceCommand({
-      type: 'play_song',
-      query: text.replace(/^play\s+/i, ''),
-      rawTranscript: text
-    });
+    const parsed = parseVoiceCommand(text);
+    handleExecuteVoiceCommand(parsed);
   };
 
   // Keyboard navigation
@@ -335,56 +505,15 @@ export const CarModeView: React.FC = () => {
       <div className="car-workspace-body">
         {/* Left Automotive Sidebar Rail matching reference board */}
         <aside className="car-sidebar-rail" aria-label="Car Navigation">
-          <button
-            className={`car-rail-item ${activeTab === 'player' ? 'active' : ''}`}
-            onClick={() => setActiveTab('player')}
-            title="Hero Player"
-            aria-label="Hero Player"
+          <Link
+            href="/"
+            className="car-rail-item"
+            title="Home"
+            aria-label="Home"
+            style={{ textDecoration: 'none' }}
           >
-            <PlayCircle size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Player</span>
-          </button>
-
-          <button
-            className={`car-rail-item ${activeTab === 'visualizer' ? 'active' : ''}`}
-            onClick={() => setActiveTab('visualizer')}
-            title="Visualizer Styles"
-            aria-label="Visualizer Styles"
-          >
-            <BarChart3 size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Visualizer</span>
-          </button>
-
-          {/* Dedicated Lyrics Tab */}
-          <button
-            className={`car-rail-item ${activeTab === 'lyrics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('lyrics')}
-            title="Synced Karaoke Lyrics"
-            aria-label="Synced Lyrics"
-          >
-            <Quote size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Lyrics</span>
-          </button>
-
-          <button
-            className={`car-rail-item ${activeTab === 'equalizer' ? 'active' : ''}`}
-            onClick={() => setActiveTab('equalizer')}
-            title="Sound Equalizer"
-            aria-label="Equalizer"
-          >
-            <Sliders size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Equalizer</span>
-          </button>
-
-          <button
-            className={`car-rail-item ${activeTab === 'queue' ? 'active' : ''}`}
-            onClick={() => setActiveTab('queue')}
-            title="Playing Next Queue"
-            aria-label="Queue"
-          >
-            <ListMusic size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Queue</span>
-          </button>
+            <Home size={26} className="car-rail-icon" />
+          </Link>
 
           <button
             className={`car-rail-item ${activeTab === 'search' ? 'active' : ''}`}
@@ -392,24 +521,58 @@ export const CarModeView: React.FC = () => {
             title="Music Search"
             aria-label="Search"
           >
-            <Search size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Search</span>
+            <Search size={26} className="car-rail-icon" />
           </button>
 
           <button
-            className={`car-rail-item ${activeTab === 'favorites' ? 'active' : ''}`}
-            onClick={() => setActiveTab('favorites')}
-            title="Favorite Road Tracks"
-            aria-label="Favorites"
+            className={`car-rail-item ${activeTab === 'player' ? 'active' : ''}`}
+            onClick={() => setActiveTab('player')}
+            title="Main Player"
+            aria-label="Main Player"
           >
-            <Heart size={22} className="car-rail-icon" />
-            <span className="car-rail-label">Favorites</span>
+            <Music2 size={26} className="car-rail-icon" />
+          </button>
+
+          <button
+            className="car-rail-item"
+            onClick={handleWatchVideo}
+            title="Watch Music Video"
+            aria-label="Watch Video"
+          >
+            <Video size={26} className="car-rail-icon text-cyan" />
+          </button>
+
+          <button
+            className={`car-rail-item ${activeTab === 'equalizer' ? 'active' : ''}`}
+            onClick={() => setActiveTab('equalizer')}
+            title="Sound Settings & Equalizer"
+            aria-label="Settings"
+          >
+            <Sliders size={26} className="car-rail-icon" />
+          </button>
+
+          <button
+            className={`car-rail-item ${voiceStatus === 'listening' ? 'active' : ''}`}
+            onClick={handleVoiceTap}
+            title="Voice Search"
+            aria-label="Voice Search"
+          >
+            <Mic size={26} className="car-rail-icon" />
+          </button>
+
+          <button
+            className="car-rail-item car-rail-ai-btn"
+            onClick={() => setIsAiChatOpen(true)}
+            title="Ask AI Music Companion"
+            aria-label="Ask AI"
+          >
+            <Sparkles size={26} className="car-rail-icon text-pink" />
           </button>
         </aside>
 
         {/* Central Stage View */}
         <main className={`car-stage-main ${activeTab === 'player' ? 'car-stage-dashboard-active' : ''}`}>
-          {/* TAB 1: HERO PLAYER (Screen 1) */}
+          {/* TAB 1: HERO PLAYER (Screen 6) */}
           {activeTab === 'player' && (
             <CarHeroPlayer
               visualizerStyle={visualizerStyle}
@@ -418,6 +581,10 @@ export const CarModeView: React.FC = () => {
               onVoiceTap={handleVoiceTap}
               onOpenVisualizerStyles={() => setActiveTab('visualizer')}
               onOpenFullscreenVisualizer={() => setIsFullscreenVizOpen(true)}
+              onOpenLyrics={() => setActiveTab('lyrics')}
+              onOpenVideo={handleWatchVideo}
+              onOpenEqualizer={() => setActiveTab('equalizer')}
+              onOpenQueue={() => setActiveTab('queue')}
             />
           )}
 
@@ -493,6 +660,14 @@ export const CarModeView: React.FC = () => {
           setVoiceStatus('idle');
         }}
         onCancelListening={handleCancelVoice}
+      />
+
+      {/* Fullscreen Video Modal with Mobile Rotate Mode */}
+      <FullscreenVideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        song={currentSong}
+        videoId={videoId}
       />
     </div>
   );

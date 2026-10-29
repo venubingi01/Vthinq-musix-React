@@ -36,12 +36,17 @@ export interface EqualizerPreset {
   gains: number[]; // 5 band values in dB (-12 to +12)
 }
 
+import type { GeneratedPlaylist, SongFactSheet } from './ai';
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'ai';
   text: string;
   timestamp: string;
   recommendedSongs?: Song[];
+  generatedPlaylist?: GeneratedPlaylist;
+  songFactSheet?: SongFactSheet;
+  suggestedFollowUps?: string[];
 }
 
 export interface ShareData {

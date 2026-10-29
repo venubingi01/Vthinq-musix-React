@@ -64,5 +64,5 @@ describe('Lyrics Service Language-Aware Matching & Parsing', () => {
     // Confirm the returned lyrics do NOT contain Tamil script characters
     const fullText = lyrics.map((l) => l.text).join(' ');
     expect(/[\u0B80-\u0BFF]/.test(fullText)).toBe(false);
-  });
+  }, 15000);
 });

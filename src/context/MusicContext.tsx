@@ -8,8 +8,9 @@ import React, {
   useRef,
   useCallback
 } from 'react';
-import type { Song, TabType, ShareData } from '../types/music';
+import type { Song, TabType, ShareData, TimedLyric } from '../types/music';
 import { STARTER_SONGS } from '../services/saavnApi';
+import { fetchLyrics } from '../services/lyricsService';
 
 interface MusicContextType {
   currentSong: Song | null;
@@ -19,6 +20,8 @@ interface MusicContextType {
   currentTime: number;
   duration: number;
   volume: number;
+  lyrics: TimedLyric[];
+  isLyricsLoading: boolean;
   isMuted: boolean;
   isLoop: boolean;
   isShuffle: boolean;
@@ -40,10 +43,16 @@ interface MusicContextType {
   toastMessage: string | null;
   showToast: (msg: string) => void;
 
+  // Voice Search Overlay
+  isVoiceSearchOpen: boolean;
+  openVoiceSearch: () => void;
+  closeVoiceSearch: () => void;
+
   // Actions
   playSong: (song: Song, newPlaylist?: Song[]) => void;
   togglePlay: () => void;
   pauseSong: () => void;
+  resumeSong: () => void;
   seek: (seconds: number) => void;
   nextSong: () => void;
   prevSong: () => void;
@@ -80,6 +89,11 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isLoop, setIsLoop] = useState<boolean>(false);
   const [isShuffle, setIsShuffle] = useState<boolean>(false);
+
+  // Synchronized Lyrics State
+  const [lyrics, setLyrics] = useState<TimedLyric[]>([]);
+  const [isLyricsLoading, setIsLyricsLoading] = useState<boolean>(false);
+  const currentSongRef = useRef<Song | null>(STARTER_SONGS[0]);
 
   // Favorites stored in state with starter seed
   const [favorites, setFavorites] = useState<Song[]>([STARTER_SONGS[0], STARTER_SONGS[1]]);
@@ -118,6 +132,17 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setShareModalData(null);
   }, []);
 
+  // Voice Search Overlay state
+  const [isVoiceSearchOpen, setIsVoiceSearchOpen] = useState<boolean>(false);
+
+  const openVoiceSearch = useCallback(() => {
+    setIsVoiceSearchOpen(true);
+  }, []);
+
+  const closeVoiceSearch = useCallback(() => {
+    setIsVoiceSearchOpen(false);
+  }, []);
+
   // Equalizer & Web Audio states
   const [eqGains, setEqGains] = useState<number[]>([0, 0, 0, 0, 0]);
   const [bassBoost, setBassBoostState] = useState<number>(3);
@@ -133,6 +158,38 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const pannerRef = useRef<StereoPannerNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const fallbackIndexRef = useRef<number>(0);
+
+  // Synchronized Central Lyrics Fetcher
+  useEffect(() => {
+    currentSongRef.current = currentSong;
+    setLyrics([]);
+    if (!currentSong) {
+      setIsLyricsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLyricsLoading(true);
+    const targetSongId = currentSong.id;
+
+    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
+      .then((data) => {
+        if (isMounted && currentSongRef.current?.id === targetSongId) {
+          setLyrics(data || []);
+          setIsLyricsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted && currentSongRef.current?.id === targetSongId) {
+          setLyrics([]);
+          setIsLyricsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentSong?.id]);
 
   // Hydrate volume and favorites safely on client mount (SSR-safe)
   useEffect(() => {
@@ -374,6 +431,10 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     fallbackIndexRef.current = 0;
     setCurrentSong(song);
+    setCurrentTime(0);
+    setDuration(song.duration || 0);
+    setLyrics([]);
+    setIsLyricsLoading(true);
 
     if (audioRef.current) {
       setIsLoading(true);
@@ -431,6 +492,29 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsPlaying(false);
   }, []);
 
+  // Explicit Resume function (e.g. after voice search cancel or interruption)
+  const resumeSong = useCallback(() => {
+    if (!audioRef.current) return;
+    try {
+      initWebAudio();
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume().catch(() => {});
+      }
+    } catch {
+      // AudioContext resume catch
+    }
+
+    if (audioRef.current.paused) {
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn('Resume error:', err);
+          setIsPlaying(false);
+        });
+    }
+  }, [initWebAudio]);
+
   // Seek audio position
   const seek = useCallback((seconds: number) => {
     if (audioRef.current) {
@@ -461,6 +545,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // If more than 3 seconds in, restart track
     if (audioRef.current && audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
+      setCurrentTime(0);
       return;
     }
 
@@ -586,6 +671,8 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         currentTime,
         duration,
         volume,
+        lyrics,
+        isLyricsLoading,
         isMuted,
         isLoop,
         isShuffle,
@@ -604,9 +691,13 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         closeShareModal,
         toastMessage,
         showToast,
+        isVoiceSearchOpen,
+        openVoiceSearch,
+        closeVoiceSearch,
         playSong,
         togglePlay,
         pauseSong,
+        resumeSong,
         seek,
         nextSong,
         prevSong,

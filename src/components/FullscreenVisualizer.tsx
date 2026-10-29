@@ -132,7 +132,8 @@ export const FullscreenVisualizer: React.FC = () => {
     toggleLoop,
     toggleShuffle,
     toggleFavorite,
-    isFavorite
+    isFavorite,
+    lyrics
   } = useMusic();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -145,19 +146,7 @@ export const FullscreenVisualizer: React.FC = () => {
   const [showControls, setShowControls] = useState<boolean>(true);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Synced lyrics fetching & state
-  const [lyrics, setLyrics] = useState<TimedLyric[]>([]);
-
-  useEffect(() => {
-    if (!currentSong) return;
-    let isMounted = true;
-    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language).then((data) => {
-      if (isMounted) setLyrics(data);
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [currentSong?.id]);
+  // Synced lyrics from centralized useMusic context
 
   const isPlain = isPlainLyrics(lyrics);
   let activeIndex = -1;

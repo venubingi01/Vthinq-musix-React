@@ -76,7 +76,7 @@ export const SearchView: React.FC = () => {
   const initialTab = (searchParams.get('tab') as SearchCategory) || 'albums';
   const initialQuery = searchParams.get('q') || '';
 
-  const { playSong, currentSong, isPlaying, pauseSong, toggleFavorite, isFavorite, openShareModal } = useMusic();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, toggleFavorite, isFavorite, openShareModal, openVoiceSearch } = useMusic();
 
   // Search category state: ALBUMS FIRST by requirement
   const [searchCategory, setSearchCategory] = useState<SearchCategory>(initialTab);
@@ -304,43 +304,9 @@ export const SearchView: React.FC = () => {
     }
   };
 
-  // Web Speech API Voice Search
+  // Open Interactive ChatGPT-Style Voice Search Modal
   const handleVoiceSearch = () => {
-    // Immediately pause song when voice search is clicked
-    pauseSong();
-
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert('Speech Recognition is not supported in this browser.');
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-IN';
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-        pauseSong();
-      };
-      recognition.onend = () => setIsListening(false);
-      recognition.onerror = () => setIsListening(false);
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        if (transcript) {
-          setSearchTerm(transcript);
-        }
-      };
-
-      recognition.start();
-    } catch (err) {
-      console.warn('Voice error:', err);
-      setIsListening(false);
-    }
+    openVoiceSearch();
   };
 
   const renderLoadMoreButton = () => {

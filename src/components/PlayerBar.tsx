@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
@@ -18,8 +18,10 @@ import {
   Loader2,
   Share2,
   Sparkles,
-  Car
+  Car,
+  ListMusic
 } from 'lucide-react';
+import { QueueModal } from './QueueModal';
 
 // Format seconds to mm:ss
 function formatTime(seconds: number): string {
@@ -30,6 +32,7 @@ function formatTime(seconds: number): string {
 }
 
 export const PlayerBar: React.FC = () => {
+  const [isQueueOpen, setIsQueueOpen] = useState<boolean>(false);
   const {
     currentSong,
     isPlaying,
@@ -62,7 +65,8 @@ export const PlayerBar: React.FC = () => {
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="player-bar-container">
+    <>
+      <div className="player-bar-container">
       {/* Top progress seek line */}
       <div className="progress-seek-wrapper">
         <input
@@ -84,12 +88,12 @@ export const PlayerBar: React.FC = () => {
         <Link href="/player" className="player-track-info" style={{ textDecoration: 'none' }}>
           <div className="track-cover-wrapper">
             <img
+              key={currentSong.id}
               src={currentSong.image}
               alt={currentSong.name}
-              className={`track-cover ${isPlaying ? 'cover-spin-subtle' : ''}`}
+              className="track-cover"
               loading="lazy"
             />
-            {isPlaying && <div className="playing-pulse-dot" />}
           </div>
           <div className="track-text">
             <span className="track-title" title={currentSong.name}>
@@ -210,24 +214,14 @@ export const PlayerBar: React.FC = () => {
             <Quote size={19} />
           </Link>
 
-          {/* Quick Share Song */}
+          {/* Playing Queue Button */}
           <button
-            className="ctrl-btn"
-            onClick={() => {
-              if (!currentSong) return;
-              const origin = typeof window !== 'undefined' ? window.location.origin : '';
-              openShareModal({
-                title: currentSong.name,
-                subtitle: `${currentSong.artist} • ${currentSong.album}`,
-                url: `${origin}/player?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`,
-                image: currentSong.image,
-                type: 'song'
-              });
-            }}
-            title="Share Song"
-            aria-label="Share Song"
+            className={`ctrl-btn ${isQueueOpen ? 'active-toggle' : ''}`}
+            onClick={() => setIsQueueOpen((prev) => !prev)}
+            title="Playing Queue"
+            aria-label="Playing Queue"
           >
-            <Share2 size={18} />
+            <ListMusic size={19} />
           </button>
 
           {/* Volume slider */}
@@ -249,5 +243,9 @@ export const PlayerBar: React.FC = () => {
         </div>
       </div>
     </div>
+
+    {/* Playing Queue Modal */}
+    <QueueModal isOpen={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
+  </>
   );
 };

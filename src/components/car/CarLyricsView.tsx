@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useMusic } from '../../context/MusicContext';
-import { fetchLyrics } from '../../services/lyricsService';
-import type { TimedLyric } from '../../types/music';
-import { Quote, Loader2, Music2, Sparkles } from 'lucide-react';
+import { ChevronLeft, Loader2, Music2, SkipBack, Play, Pause, SkipForward } from 'lucide-react';
 import { decodeHTMLEntities } from '../../services/sangeethamApi';
 
 interface CarLyricsViewProps {
@@ -12,40 +10,36 @@ interface CarLyricsViewProps {
   onClose?: () => void;
 }
 
+function formatDuration(seconds: number): string {
+  if (isNaN(seconds) || seconds < 0) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
 export const CarLyricsView: React.FC<CarLyricsViewProps> = ({ className = '', onClose }) => {
-  const { currentSong, currentTime, seek, isPlaying } = useMusic();
-  const [lyrics, setLyrics] = useState<TimedLyric[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const {
+    currentSong,
+    currentTime,
+    duration,
+    seek,
+    isPlaying,
+    togglePlay,
+    prevSong,
+    nextSong,
+    lyrics,
+    isLyricsLoading
+  } = useMusic();
+
   const [activeLineIdx, setActiveLineIdx] = useState<number>(-1);
+  const [fontSizeLevel, setFontSizeLevel] = useState<'normal' | 'large' | 'xlarge'>('large');
+
   const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
   const activeLineRef = useRef<HTMLParagraphElement | null>(null);
 
-  // Load lyrics whenever current song changes
+  // Reset active line index immediately whenever current song changes
   useEffect(() => {
-    if (!currentSong) {
-      setLyrics([]);
-      return;
-    }
-
-    let isMounted = true;
-    setIsLoading(true);
-
-    fetchLyrics(currentSong.name, currentSong.artist, currentSong.album, currentSong.language)
-      .then((data) => {
-        if (!isMounted) return;
-        setLyrics(data || []);
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setLyrics([]);
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
+    setActiveLineIdx(-1);
   }, [currentSong?.id]);
 
   // Sync active line based on audio currentTime
@@ -78,44 +72,58 @@ export const CarLyricsView: React.FC<CarLyricsViewProps> = ({ className = '', on
 
   if (!currentSong) {
     return (
-      <div className={`car-lyrics-empty ${className}`}>
+      <div className={`car-lyrics-screen7-card empty ${className}`}>
         <Music2 size={54} className="text-muted" />
         <p>No track currently playing</p>
       </div>
     );
   }
 
-  const songName = decodeHTMLEntities(currentSong.name);
-  const artistName = decodeHTMLEntities(currentSong.artist);
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  const toggleFontSize = () => {
+    if (fontSizeLevel === 'normal') setFontSizeLevel('large');
+    else if (fontSizeLevel === 'large') setFontSizeLevel('xlarge');
+    else setFontSizeLevel('normal');
+  };
 
   return (
-    <div className={`car-lyrics-container ${className}`}>
-      {/* Lyrics Header */}
-      <div className="car-lyrics-header">
-        <div className="car-lyrics-title-group">
-          <Quote size={22} className="text-electric-blue" />
-          <div>
-            <h2 className="car-lyrics-track-title">{songName}</h2>
-            <p className="car-lyrics-track-artist">{artistName} • Synced Lyrics</p>
-          </div>
+    <div className={`car-lyrics-screen7-card ${className}`}>
+      {/* Top Bar with Back Arrow, Currently Playing Song Info, and Font Size Toggle */}
+      <div className="car-lyrics-top-nav-bar">
+        <button
+          className="car-lyrics-back-arrow-btn"
+          onClick={onClose}
+          aria-label="Back to Main Player"
+        >
+          <ChevronLeft size={30} />
+        </button>
+
+        <div className="car-lyrics-header-info">
+          <h2 className="car-lyrics-song-title">{decodeHTMLEntities(currentSong.name)}</h2>
+          <p className="car-lyrics-artist-name">{decodeHTMLEntities(currentSong.artist)}</p>
         </div>
 
-        {onClose && (
-          <button className="car-lyrics-close-btn" onClick={onClose} aria-label="Close lyrics">
-            Close
-          </button>
-        )}
+        <button
+          className="car-lyrics-font-toggle-btn"
+          onClick={toggleFontSize}
+          title="Toggle font size"
+          aria-label="Toggle font size"
+        >
+          <span>A</span>
+          <span className="font-lg-indicator">A</span>
+        </button>
       </div>
 
-      {/* Lyrics Content Stream */}
-      <div className="car-lyrics-scroll-area" ref={lyricsContainerRef}>
-        {isLoading ? (
-          <div className="car-lyrics-loading">
-            <Loader2 size={36} className="spin text-electric-blue" />
-            <span>Finding synchronized lyrics...</span>
+      {/* Main Lyrics Display Area with centered large automotive karaoke lines */}
+      <div className={`car-lyrics-lines-container font-scale-${fontSizeLevel}`} ref={lyricsContainerRef}>
+        {isLyricsLoading ? (
+          <div className="car-lyrics-screen7-loading">
+            <Loader2 size={36} className="spin text-pink" />
+            <span>Loading synced karaoke lyrics...</span>
           </div>
         ) : lyrics.length > 0 ? (
-          <div className="car-lyrics-lines-list">
+          <div className="car-lyrics-lines-wrapper">
             {lyrics.map((line, idx) => {
               const isActive = idx === activeLineIdx;
               const isPast = idx < activeLineIdx;
@@ -124,7 +132,7 @@ export const CarLyricsView: React.FC<CarLyricsViewProps> = ({ className = '', on
                 <p
                   key={`${line.time}-${idx}`}
                   ref={isActive ? activeLineRef : null}
-                  className={`car-lyric-line ${isActive ? 'active' : ''} ${isPast ? 'past' : ''}`}
+                  className={`car-screen7-line ${isActive ? 'active-singing' : ''} ${isPast ? 'past' : ''}`}
                   onClick={() => seek(line.time)}
                   role="button"
                   tabIndex={0}
@@ -135,19 +143,66 @@ export const CarLyricsView: React.FC<CarLyricsViewProps> = ({ className = '', on
                     }
                   }}
                 >
-                  {isActive && <Sparkles size={18} className="car-lyric-sparkle" />}
-                  <span>{line.text}</span>
+                  {line.text}
                 </p>
               );
             })}
           </div>
         ) : (
-          <div className="car-lyrics-empty">
-            <Quote size={48} className="text-muted" />
+          <div className="car-lyrics-screen7-empty">
             <p>Lyrics not available for this track</p>
-            <span>Sing along and enjoy the beat!</span>
           </div>
         )}
+      </div>
+
+      {/* Bottom Transport Controls & Scrubber */}
+      <div className="car-lyrics-bottom-bar">
+        <div className="car-lyrics-mini-controls">
+          <button
+            className="car-lyrics-ctrl-btn"
+            onClick={prevSong}
+            title="Previous Song"
+            aria-label="Previous Song"
+          >
+            <SkipBack size={26} />
+          </button>
+          <button
+            className="car-lyrics-ctrl-btn play-pause"
+            onClick={togglePlay}
+            title={isPlaying ? 'Pause' : 'Play'}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+          </button>
+          <button
+            className="car-lyrics-ctrl-btn"
+            onClick={nextSong}
+            title="Next Song"
+            aria-label="Next Song"
+          >
+            <SkipForward size={26} />
+          </button>
+        </div>
+
+        <div className="car-lyrics-screen7-scrubber">
+          <span className="car-scrubber-time current">{formatDuration(currentTime)}</span>
+          <div className="car-scrubber-track-box">
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              step={0.5}
+              value={currentTime}
+              onChange={(e) => seek(parseFloat(e.target.value))}
+              className="car-scrubber-slider"
+              aria-label="Seek track position"
+              style={{
+                background: `linear-gradient(to right, #ff2d75 ${progressPercent}%, rgba(255, 255, 255, 0.16) ${progressPercent}%)`
+              }}
+            />
+          </div>
+          <span className="car-scrubber-time duration">{formatDuration(duration)}</span>
+        </div>
       </div>
     </div>
   );

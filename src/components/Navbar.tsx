@@ -3,11 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useMusic } from '../context/MusicContext';
-import { Sparkles, Sliders, Search, Music2, Quote, Car } from 'lucide-react';
+import { Sliders, Search, Music2, Quote, Car, Settings } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { setIsAiChatOpen } = useMusic();
   const pathname = usePathname();
 
   if (pathname?.startsWith('/car')) {
@@ -53,7 +51,7 @@ export const Navbar: React.FC = () => {
           </Link> */}
 
           {/* Synced Lyrics & Visualizer Link */}
-          <Link
+          {/* <Link
             href="/player"
             className={`action-btn lyrics-nav-btn ${pathname === '/player' ? 'active' : ''}`}
             title="Synced Lyrics & Visualizer"
@@ -61,10 +59,10 @@ export const Navbar: React.FC = () => {
           >
             <Quote size={18} />
             <span className="btn-label-desktop">Lyrics</span>
-          </Link>
+          </Link> */}
 
           {/* Equalizer & Spatial Audio Link */}
-          <Link
+          {/* <Link
             href="/equalizer"
             className={`action-btn ${pathname === '/equalizer' ? 'active' : ''}`}
             title="Audio Equalizer & 3D"
@@ -72,10 +70,10 @@ export const Navbar: React.FC = () => {
           >
             <Sliders size={19} />
             <span className="btn-label-desktop">EQ & 3D</span>
-          </Link>
+          </Link> */}
 
           {/* Car Mode Link */}
-          <Link
+          {/* <Link
             href="/car"
             className="action-btn car-mode-nav-btn"
             title="Sangeetham Car Mode"
@@ -83,18 +81,8 @@ export const Navbar: React.FC = () => {
           >
             <Car size={19} />
             <span className="btn-label-desktop">Car Mode</span>
-          </Link>
-
-          {/* Ask AI Music Assistant Trigger */}
-          <button
-            className="action-btn ai-sparkle-btn"
-            onClick={() => setIsAiChatOpen(true)}
-            title="Ask AI Music Assistant"
-            aria-label="AI Music Assistant"
-          >
-            <Sparkles size={18} className="sparkle-icon" />
-            <span>Ask AI</span>
-          </button>
+          </Link> */}
+          {/* Settings & About Link */}
         </div>
       </div>
     </header>

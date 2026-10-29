@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
-import { Home, Search, Heart, PlayCircle, Sliders } from 'lucide-react';
+import { Home, Search, Heart, PlayCircle, Settings } from 'lucide-react';
 
 interface NavRouteItem {
   href: string;
@@ -17,7 +17,7 @@ const NAV_ROUTES: NavRouteItem[] = [
   { href: '/search', label: 'Search', icon: Search },
   { href: '/favorites', label: 'Favorites', icon: Heart },
   { href: '/player', label: 'Player', icon: PlayCircle },
-  { href: '/equalizer', label: 'EQ & 3D', icon: Sliders }
+  { href: '/settings', label: 'Settings', icon: Settings }
 ];
 
 export const BottomNav: React.FC = () => {

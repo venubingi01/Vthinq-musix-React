@@ -1,0 +1,1076 @@
+/* ==========================================================================
+   Sangeetham Mobile Player Design System
+   Exact pixel-perfect implementation matching reference design:
+   1. Now Playing (Expanded)
+   2. Lyrics View (Karaoke)
+   3. Visualizer View (Circular Radial Ring)
+   4. Equalizer & Audio Effects (5-Band + Toggles)
+   5. Queue / Playlist (Active wave card + Sticky mini player)
+   ========================================================================== */
+
+:root {
+  --mob-bg-dark: #090c15;
+  --mob-card-bg: rgba(16, 21, 34, 0.75);
+  --mob-card-border: rgba(255, 255, 255, 0.08);
+  --mob-card-border-active: rgba(255, 45, 117, 0.35);
+  --mob-pink: #ff2d75;
+  --mob-pink-gradient: linear-gradient(135deg, #ff2d75, #ee0979);
+  --mob-pink-glow: 0 0 24px rgba(255, 45, 117, 0.55);
+  --mob-text-primary: #ffffff;
+  --mob-text-secondary: #94a3b8;
+  --mob-text-muted: #64748b;
+  --mob-radius-lg: 24px;
+  --mob-radius-md: 16px;
+  --mob-radius-full: 9999px;
+}
+
+.mobile-player-viewport-only {
+  display: none;
+}
+
+.desktop-player-viewport-only {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .mobile-player-viewport-only {
+    display: block !important;
+  }
+
+  .desktop-player-viewport-only {
+    display: none !important;
+  }
+
+  body:has(.mobile-player-shell) .app-header,
+  body:has(.mobile-player-shell) .ai-floating-trigger,
+  body:has(.mobile-player-shell) .player-bar-container {
+    display: none !important;
+  }
+
+  body:has(.mobile-player-shell) .main-viewport {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* Master Mobile Container */
+.mobile-player-shell {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--mob-bg-dark);
+  color: var(--mob-text-primary);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 12px 16px 14px 16px;
+  margin-bottom: var(--bottom-nav-height, 60px);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+  margin-bottom: 0;
+}
+
+/* Ambient Backdrop Glow */
+.mobile-player-ambient-blur {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(90px) brightness(0.22);
+  transform: scale(1.2);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.65;
+}
+
+/* Top Device Status Bar (Mockup iPhone notch / status 9:41) */
+.mobile-device-status-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px 12px 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mobile-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Top App Header (Brand Logo, Fav Heart, Three Dots) */
+.mobile-top-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.mobile-header-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-header-back-btn:hover {
+  background: rgba(255, 45, 117, 0.2);
+  border-color: var(--mob-pink);
+}
+
+.mobile-brand-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.mobile-brand-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--mob-pink-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 45, 117, 0.4);
+}
+
+.mobile-brand-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-brand-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.mobile-brand-sub {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--mob-pink);
+  text-transform: uppercase;
+}
+
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-header-icon-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-header-icon-btn:hover,
+.mobile-header-icon-btn.active {
+  color: var(--mob-pink);
+  transform: scale(1.08);
+}
+
+.mobile-header-icon-btn.is-fav {
+  color: #ff3366;
+}
+
+/* ==========================================================================
+   Pill Segmented Toggles (Karaoke, Visualizer Modes, Equalizer Tabs, Queue Tabs)
+   ========================================================================== */
+.mobile-segmented-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--mob-radius-full);
+  padding: 3px;
+  margin: 0 auto 16px auto;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.mobile-seg-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: var(--mob-radius-full);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.mobile-seg-btn.active {
+  background: var(--mob-pink-gradient);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 45, 117, 0.45);
+}
+
+/* Presets Carousel Pills */
+.mobile-presets-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  scrollbar-width: none;
+}
+
+.mobile-presets-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-preset-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 6px 15px;
+  border-radius: var(--mob-radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.mobile-preset-chip.active {
+  background: var(--mob-pink-gradient);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(255, 45, 117, 0.4);
+}
+
+/* ==========================================================================
+   Screen 1: Now Playing (Expanded)
+   ========================================================================== */
+.mobile-nowplaying-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Album Art */
+.mobile-artwork-container {
+  position: relative;
+  width: 100%;
+  max-width: clamp(230px, 32vh, 290px);
+  aspect-ratio: 1 / 1;
+  margin: 34px auto 34px auto;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 45, 117, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mobile-artwork-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+
+/* Track Details */
+.mobile-track-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 0 6px;
+}
+
+.mobile-track-text-group {
+  flex: 1;
+  min-width: 0;
+  padding-right: 12px;
+}
+
+.mobile-song-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+.mobile-artist-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--mob-text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-heart-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-heart-btn.is-fav {
+  color: #ff3366;
+}
+
+/* Scrubber / Seek Bar */
+.mobile-scrubber-section {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 12px;
+  padding: 0 6px;
+}
+
+.mobile-slider-track-wrap {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-seek-slider {
+  width: 100%;
+  height: 4px;
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: height 0.15s ease;
+}
+
+.mobile-seek-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 45, 117, 0.8), 0 2px 4px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mobile-seek-slider:active::-webkit-slider-thumb {
+  transform: scale(1.3);
+}
+
+.mobile-seek-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 45, 117, 0.8);
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-timestamps-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--mob-text-muted);
+  margin-top: 2px;
+}
+
+/* Playback Controls Row */
+.mobile-controls-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 14px 8px;
+}
+
+.mobile-ctrl-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobile-ctrl-btn:hover {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.mobile-ctrl-btn.active-toggle {
+  color: var(--mob-pink);
+  text-shadow: 0 0 8px rgba(255, 45, 117, 0.6);
+}
+
+.mobile-play-circle-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--mob-pink-gradient);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--mob-pink-glow), 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mobile-play-circle-btn:active {
+  transform: scale(0.94);
+}
+
+.mobile-play-circle-btn .play-offset {
+  margin-left: 3px;
+}
+
+/* Bottom Reactive Visualizer Spectrum (Screen 1) matching desktop animation */
+.mobile-bottom-visualizer-wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 52px;
+  margin: 4px 0 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-bottom-visualizer-wrap .visualizer-canvas {
+  width: 100% !important;
+  max-width: 340px;
+  height: 48px !important;
+  border-radius: 6px;
+}
+
+/* ==========================================================================
+   Screen 2: Existing Large Screen Lyrics Page (Full Screen View)
+   ========================================================================== */
+.mobile-lyrics-existing-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: calc(100vh - 150px);
+}
+
+.mobile-lyrics-existing-stage .lyrical-stage-wrapper {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 20px;
+}
+
+.mobile-lyrics-existing-stage .lyrical-main-stage {
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px;
+  gap: 16px;
+}
+
+.mobile-lyrics-existing-stage .lyrical-portrait-card {
+  width: 160px !important;
+  height: 240px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.mobile-lyrics-existing-stage .lyrical-active-line {
+  font-size: 1.6rem !important;
+  line-height: 1.35;
+  padding: 6px 0;
+}
+
+.mobile-lyrics-existing-stage .lyrical-canvas-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 28vh;
+  pointer-events: none;
+}
+
+.mobile-lyrics-view-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.mobile-lyrics-stream-box {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.mobile-lyrics-stream-box::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-lyric-line-item {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+.mobile-lyric-line-item:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mobile-lyric-line-item.active {
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ff3377;
+  text-shadow: 0 0 20px rgba(255, 45, 117, 0.8), 0 0 35px rgba(255, 45, 117, 0.4);
+  transform: scale(1.04);
+}
+
+/* Floating Font Size Control */
+.mobile-font-size-float-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  backdrop-filter: blur(10px);
+}
+
+/* ==========================================================================
+   Screen 3: Visualizer View (Circular Radial Ring & Modes)
+   ========================================================================== */
+.mobile-visualizer-view-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  padding: 10px 0;
+}
+
+.mobile-radial-viz-container {
+  position: relative;
+  width: 270px;
+  height: 270px;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-radial-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.mobile-radial-center-thumb {
+  position: relative;
+  z-index: 2;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255, 45, 117, 0.6), 0 0 10px rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.mobile-radial-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.mobile-radial-thumb-img.spinning {
+  animation: mobSpinDisc 20s linear infinite;
+}
+
+@keyframes mobSpinDisc {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mobile-viz-meta-center {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.mobile-viz-meta-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+}
+
+.mobile-viz-meta-artist {
+  font-size: 0.85rem;
+  color: var(--mob-text-secondary);
+  margin: 0;
+}
+
+/* ==========================================================================
+   Screen 4: Equalizer & Audio Effects View
+   ========================================================================== */
+.mobile-equalizer-view-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+  scrollbar-width: none;
+}
+
+.mobile-equalizer-view-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* 5-Band Vertical Faders Grid */
+.mobile-eq-faders-card {
+  background: var(--mob-card-bg);
+  border: 1px solid var(--mob-card-border);
+  border-radius: var(--mob-radius-lg);
+  padding: 16px 14px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(20px);
+}
+
+.mobile-eq-faders-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 190px;
+  padding: 10px 0;
+  position: relative;
+}
+
+/* dB Scale Marks */
+.mobile-eq-scale-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 150px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--mob-text-muted);
+  padding-right: 6px;
+}
+
+.mobile-fader-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.mobile-fader-track-box {
+  position: relative;
+  height: 150px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-vertical-fader {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 6px;
+  height: 140px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.mobile-vertical-fader::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 45, 117, 0.9);
+  cursor: pointer;
+}
+
+.mobile-vertical-fader::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 0 10px rgba(255, 45, 117, 0.9);
+}
+
+.mobile-fader-hz-label {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--mob-text-secondary);
+}
+
+/* Audio Effects Toggle Cards */
+.mobile-effects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-effect-item {
+  background: var(--mob-card-bg);
+  border: 1px solid var(--mob-card-border);
+  border-radius: var(--mob-radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(16px);
+}
+
+.mobile-effect-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-effect-icon {
+  color: var(--mob-pink);
+}
+
+.mobile-effect-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Toggle Switch */
+.mobile-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.mobile-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mobile-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.16);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.mobile-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.mobile-switch input:checked+.mobile-switch-slider {
+  background: var(--mob-pink-gradient);
+  box-shadow: 0 0 10px rgba(255, 45, 117, 0.5);
+}
+
+.mobile-switch input:checked+.mobile-switch-slider:before {
+  transform: translateX(20px);
+}
+
+/* ==========================================================================
+   Screen 5: Queue / Playlist View
+   ========================================================================== */
+.mobile-queue-view-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.mobile-queue-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 70px;
+  scrollbar-width: none;
+}
+
+.mobile-queue-list-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Active Highlighted Song Card */
+.mobile-queue-card-active {
+  background: linear-gradient(135deg, rgba(255, 45, 117, 0.18), rgba(238, 9, 121, 0.08));
+  border: 1px solid rgba(255, 45, 117, 0.45);
+  border-radius: var(--mob-radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 18px rgba(255, 45, 117, 0.2);
+}
+
+.mobile-queue-card-active .q-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-right: 12px;
+}
+
+/* Standard Queue Song Item */
+.mobile-queue-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--mob-radius-md);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-queue-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-q-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.mobile-q-left .q-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.mobile-q-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mobile-q-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-q-artist {
+  font-size: 0.74rem;
+  color: var(--mob-text-secondary);
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sticky Bottom Mini Player (Screen 5) */
+.mobile-sticky-mini-player {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 20, 32, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.mobile-mini-play-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--mob-pink-gradient);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(255, 45, 117, 0.45);
+}
+
+/* ==========================================================================
+   Bottom Navigation Tabs (Lyrics, Visualizer, Equalizer, Queue)
+   ========================================================================== */
+.mobile-bottom-nav-tabs {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(16, 21, 34, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--mob-radius-full);
+  padding: 8px 12px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  backdrop-filter: blur(20px);
+}
+
+.mobile-nav-tab-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-tab-btn:hover {
+  color: #ffffff;
+}
+
+.mobile-nav-tab-btn.active {
+  color: var(--mob-pink);
+  text-shadow: 0 0 10px rgba(255, 45, 117, 0.5);
+}
+
+.mobile-nav-tab-btn.active svg {
+  transform: scale(1.15);
+}
