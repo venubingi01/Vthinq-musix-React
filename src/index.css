@@ -270,7 +270,9 @@ h4,
   transform: scale(0.96);
 }
 
-@media (max-width: 768px), (max-height: 520px) and (orientation: landscape), (max-width: 950px) and (max-height: 520px) {
+@media (max-width: 768px),
+(max-height: 520px) and (orientation: landscape),
+(max-width: 950px) and (max-height: 520px) {
   .ai-floating-trigger {
     bottom: calc(var(--bottom-nav-height, 60px) + var(--player-bar-height, 72px) + 14px);
     right: 16px;
@@ -2892,6 +2894,7 @@ input:checked+.toggle-slider:before {
 
 /* If device is naturally held in landscape, avoid double/sideways CSS rotation */
 @media (orientation: landscape) {
+
   .fs-video-modal,
   .fs-video-modal.is-rotated-landscape {
     width: 100vw !important;
@@ -3132,22 +3135,27 @@ input:checked+.toggle-slider:before {
   box-shadow: 0 0 20px rgba(255, 45, 117, 0.6);
 }
 
-@media (max-width: 600px), (max-height: 520px) {
+@media (max-width: 600px),
+(max-height: 520px) {
   .fs-video-topbar {
     padding: max(10px, env(safe-area-inset-top, 10px)) max(12px, env(safe-area-inset-right, 12px)) 10px max(12px, env(safe-area-inset-left, 12px));
     gap: 8px;
   }
+
   .fs-video-title {
     font-size: 0.84rem;
     max-width: 140px;
   }
+
   .fs-video-badge {
     padding: 3px 6px;
     font-size: 0.62rem;
   }
+
   .fs-video-hud-btn .btn-label {
     display: none;
   }
+
   .fs-video-hud-btn {
     padding: 8px 10px;
   }
@@ -4207,7 +4215,9 @@ input:checked+.toggle-slider:before {
    Master Responsive Design System: Mobile-Friendly View (< 680px & < 480px)
    ========================================================================== */
 
-@media (max-width: 768px), (max-height: 520px) and (orientation: landscape), (max-width: 950px) and (max-height: 520px) {
+@media (max-width: 768px),
+(max-height: 520px) and (orientation: landscape),
+(max-width: 950px) and (max-height: 520px) {
 
   /* 1. Global Dimensions & Root Shell */
   :root {
@@ -4274,7 +4284,7 @@ input:checked+.toggle-slider:before {
 
   .logo-badge {
     font-size: 0.55rem;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.5px;
   }
 
   .header-actions {
@@ -6274,7 +6284,9 @@ input:checked+.toggle-slider:before {
   bottom: 0;
 }
 
-@media (max-width: 768px), (max-height: 520px) and (orientation: landscape), (max-width: 950px) and (max-height: 520px) {
+@media (max-width: 768px),
+(max-height: 520px) and (orientation: landscape),
+(max-width: 950px) and (max-height: 520px) {
   .lyrical-canvas-bg {
     bottom: calc(var(--player-height, 80px) + var(--bottom-nav-height, 60px));
     height: 36vh;
