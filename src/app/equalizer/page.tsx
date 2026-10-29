@@ -9,11 +9,17 @@ export default function EqualizerPage() {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const isNarrow = window.innerWidth <= 768;
+      const isLandscapeMobile = window.innerHeight <= 520 && window.innerWidth <= 1024;
+      setIsMobile(isNarrow || isLandscapeMobile);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('orientationchange', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('orientationchange', checkMobile);
+    };
   }, []);
 
   if (isMobile) {

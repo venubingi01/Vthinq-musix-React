@@ -15,19 +15,22 @@ export function decodeHTMLEntities(text: string): string {
 // 1. Verified Core / Starter Songs from Sangeetham API with active 320kbps & 160kbps streams
 export const STARTER_SONGS: Song[] = [
   {
-    id: 'CdncOYcw',
-    name: 'Darkhaast',
-    artist: 'Mithoon, Arijit Singh, Sunidhi Chauhan',
-    album: 'Shivaay',
-    image: 'https://c.saavncdn.com/550/Shivaay4-Hindi-2016-500x500.jpg',
-    url: 'https://aac.saavncdn.com/550/0aa1d08ce795857251c8cdb28fc2f998_320.mp4',
-    fallbackUrls: [
-      'https://aac.saavncdn.com/550/0aa1d08ce795857251c8cdb28fc2f998_160.mp4'
+    "id": "CdncOYcw",
+    "name": "Darkhaast",
+    "artist": "Mithoon, Arijit Singh, Sunidhi Chauhan",
+    "album": "Shivaay",
+    "image": "https://c.saavncdn.com/550/Shivaay4-Hindi-2016-500x500.jpg",
+    "url": "https://aac.saavncdn.com/550/667292c2024814298696b68c971b171e_320.mp4",
+    "fallbackUrls": [
+      "https://aac.saavncdn.com/550/667292c2024814298696b68c971b171e_12.mp4",
+      "https://aac.saavncdn.com/550/667292c2024814298696b68c971b171e_48.mp4",
+      "https://aac.saavncdn.com/550/667292c2024814298696b68c971b171e_96.mp4",
+      "https://aac.saavncdn.com/550/667292c2024814298696b68c971b171e_160.mp4"
     ],
-    duration: 375,
-    quality: '320kbps',
-    year: '2016',
-    language: 'Hindi'
+    "duration": 375,
+    "quality": "320kbps",
+    "year": "2016",
+    "language": "hindi"
   },
   {
     id: 'rjkrTnma',

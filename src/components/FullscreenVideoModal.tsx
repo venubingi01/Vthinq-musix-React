@@ -49,13 +49,28 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
     }
   }, [isOpen]);
 
+  // Cancel simulated CSS rotation if the device naturally becomes landscape
+  useEffect(() => {
+    const handleOrientationOrResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth > window.innerHeight) {
+        setIsRotated(false);
+      }
+    };
+    window.addEventListener('resize', handleOrientationOrResize);
+    window.addEventListener('orientationchange', handleOrientationOrResize);
+    return () => {
+      window.removeEventListener('resize', handleOrientationOrResize);
+      window.removeEventListener('orientationchange', handleOrientationOrResize);
+    };
+  }, []);
+
   // Handle Controls auto-hide timer
   const handleUserActivity = useCallback(() => {
     setShowControls(true);
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     controlsTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
-    }, 4000);
+    }, 4500);
   }, []);
 
   useEffect(() => {
@@ -91,11 +106,20 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Toggle Mobile Rotate Mode (rotates video 90deg to widescreen landscape)
-  const handleToggleRotate = async () => {
+  // Toggle Mobile Rotate Mode (rotates video 90deg to widescreen landscape on portrait screens)
+  const handleToggleRotate = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    handleUserActivity();
+
+    const isPhysicalLandscape = typeof window !== 'undefined' && window.innerWidth > window.innerHeight;
+    if (isPhysicalLandscape) {
+      // Already physically landscape; no 90-degree CSS rotation needed
+      setIsRotated(false);
+      return;
+    }
+
     const nextRotated = !isRotated;
     setIsRotated(nextRotated);
-    handleUserActivity();
 
     try {
       if (typeof screen !== 'undefined' && screen.orientation && 'lock' in screen.orientation) {
@@ -106,12 +130,13 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
         }
       }
     } catch {
-      // CSS rotation handles orientation reliably
+      // CSS rotation fallback
     }
   };
 
   // Toggle Native OS Fullscreen
-  const handleToggleNativeFullscreen = () => {
+  const handleToggleNativeFullscreen = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     handleUserActivity();
     if (!document.fullscreenElement) {
       if (modalRef.current && modalRef.current.requestFullscreen) {
@@ -126,6 +151,11 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
     }
   };
 
+  const handleClose = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    onClose();
+  };
+
   if (!isOpen || !song || !videoId) return null;
 
   const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=1&rel=0&playsinline=1&modestbranding=1`;
@@ -133,7 +163,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
   return (
     <div
       className="fs-video-backdrop"
-      onClick={onClose}
+      onClick={handleClose}
       onMouseMove={handleUserActivity}
       onTouchStart={handleUserActivity}
       role="dialog"
@@ -144,6 +174,17 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
         className={`fs-video-modal ${isRotated ? 'is-rotated-landscape' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Guaranteed Persistent Close FAB at top right (safe-area aware) */}
+        <button
+          className="fs-video-floating-close-btn"
+          onClick={handleClose}
+          title="Close Video Player (Esc)"
+          aria-label="Close Video"
+        >
+          <X size={18} />
+          <span>Close</span>
+        </button>
+
         {/* Top Header HUD overlay */}
         <div className={`fs-video-topbar ${showControls ? 'visible' : 'hidden'}`}>
           <div className="fs-video-title-wrap">
@@ -164,7 +205,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
               aria-label="Rotate Video"
             >
               <RotateCw size={17} className={isRotated ? 'rotated-icon' : ''} />
-              <span className="btn-label">{isRotated ? 'Portrait' : 'Rotate Mode'}</span>
+              <span className="btn-label">{isRotated ? 'Portrait' : 'Rotate'}</span>
             </button>
 
             {/* Native OS Fullscreen Button */}
@@ -177,10 +218,10 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
               {isNativeFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
 
-            {/* Close Button */}
+            {/* Close Button in HUD */}
             <button
               className="fs-video-close-btn"
-              onClick={onClose}
+              onClick={handleClose}
               title="Close Video (Esc)"
               aria-label="Close Video"
             >
@@ -189,16 +230,28 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
           </div>
         </div>
 
-        {/* Floating Quick Rotate FAB on Mobile */}
-        <button
-          className={`fs-video-floating-rotate-btn ${showControls ? 'visible' : 'dimmed'}`}
-          onClick={handleToggleRotate}
-          title={isRotated ? 'Switch to Portrait' : 'Rotate to Fullscreen Landscape'}
-          aria-label="Toggle Rotate Mode"
-        >
-          <RotateCw size={18} />
-          <span>{isRotated ? 'Portrait' : 'Rotate'}</span>
-        </button>
+        {/* Floating Quick Action Bar on Mobile (Rotate + Close within thumb reach) */}
+        <div className={`fs-video-bottom-actions ${showControls ? 'visible' : 'dimmed'}`}>
+          <button
+            className={`fs-video-action-pill ${isRotated ? 'active' : ''}`}
+            onClick={handleToggleRotate}
+            title={isRotated ? 'Switch to Portrait' : 'Rotate to Fullscreen Landscape'}
+            aria-label="Toggle Rotate Mode"
+          >
+            <RotateCw size={17} className={isRotated ? 'rotated-icon' : ''} />
+            <span>{isRotated ? 'Portrait' : 'Rotate'}</span>
+          </button>
+
+          <button
+            className="fs-video-action-pill close-pill"
+            onClick={handleClose}
+            title="Close Video (Esc)"
+            aria-label="Close Video"
+          >
+            <X size={17} />
+            <span>Close</span>
+          </button>
+        </div>
 
         {/* Video Player Frame taking 100% full view */}
         <div className="fs-video-frame-container">
