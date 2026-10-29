@@ -3117,22 +3117,9 @@ input:checked+.toggle-slider:before {
   transform: scale(1.05);
 }
 
-.fs-video-action-pill.active {
-  background: var(--accent-pink);
-  border-color: var(--accent-pink);
-  box-shadow: 0 0 16px rgba(255, 45, 117, 0.5);
-}
-
 .fs-video-action-pill.close-pill {
   background: rgba(255, 45, 117, 0.3);
   border-color: rgba(255, 45, 117, 0.65);
-}
-
-.fs-video-action-pill.close-pill:hover,
-.fs-video-action-pill.close-pill:active {
-  background: var(--accent-pink);
-  border-color: var(--accent-pink);
-  box-shadow: 0 0 20px rgba(255, 45, 117, 0.6);
 }
 
 @media (max-width: 600px),

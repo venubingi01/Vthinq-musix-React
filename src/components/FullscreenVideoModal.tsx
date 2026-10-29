@@ -198,18 +198,10 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
 
           <div className="fs-video-actions">
             {/* Mobile Rotate Mode Button */}
-            <button
-              className={`fs-video-hud-btn rotate-toggle-btn ${isRotated ? 'active' : ''}`}
-              onClick={handleToggleRotate}
-              title={isRotated ? 'Switch to Portrait' : 'Rotate to Fullscreen Landscape'}
-              aria-label="Rotate Video"
-            >
-              <RotateCw size={17} className={isRotated ? 'rotated-icon' : ''} />
-              <span className="btn-label">{isRotated ? 'Portrait' : 'Rotate'}</span>
-            </button>
+
 
             {/* Native OS Fullscreen Button */}
-            <button
+            {/* <button
               className="fs-video-hud-btn icon-only"
               onClick={handleToggleNativeFullscreen}
               title={isNativeFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
@@ -219,6 +211,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
             </button>
 
             {/* Close Button in HUD */}
+            {/*
             <button
               className="fs-video-close-btn"
               onClick={handleClose}
@@ -226,7 +219,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
               aria-label="Close Video"
             >
               <X size={22} />
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -238,8 +231,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
             title={isRotated ? 'Switch to Portrait' : 'Rotate to Fullscreen Landscape'}
             aria-label="Toggle Rotate Mode"
           >
-            <RotateCw size={17} className={isRotated ? 'rotated-icon' : ''} />
-            <span>{isRotated ? 'Portrait' : 'Rotate'}</span>
+            <RotateCw size={17} className={isRotated ? ' rotate-btn-mobile-left' : 'rotate-btn-mobile-right'} />
           </button>
           {/* 
           <button
