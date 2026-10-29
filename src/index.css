@@ -3150,6 +3150,7 @@ input:checked+.toggle-slider:before {
   }
   .fs-video-hud-btn {
     padding: 8px 10px;
+  }
 }
 
 .fs-video-frame-container {
