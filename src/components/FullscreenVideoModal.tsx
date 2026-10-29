@@ -43,9 +43,9 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
       setIsRotated(false);
       try {
         if (typeof screen !== 'undefined' && screen.orientation && 'unlock' in screen.orientation) {
-          (screen.orientation as any).unlock().catch(() => {});
+          (screen.orientation as any).unlock().catch(() => { });
         }
-      } catch {}
+      } catch { }
     }
   }, [isOpen]);
 
@@ -124,9 +124,9 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
     try {
       if (typeof screen !== 'undefined' && screen.orientation && 'lock' in screen.orientation) {
         if (nextRotated) {
-          await (screen.orientation as any).lock('landscape').catch(() => {});
+          await (screen.orientation as any).lock('landscape').catch(() => { });
         } else {
-          await (screen.orientation as any).unlock().catch(() => {});
+          await (screen.orientation as any).unlock().catch(() => { });
         }
       }
     } catch {
@@ -140,13 +140,13 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
     handleUserActivity();
     if (!document.fullscreenElement) {
       if (modalRef.current && modalRef.current.requestFullscreen) {
-        modalRef.current.requestFullscreen().catch(() => {});
+        modalRef.current.requestFullscreen().catch(() => { });
       } else if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
+        document.documentElement.requestFullscreen().catch(() => { });
       }
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
+        document.exitFullscreen().catch(() => { });
       }
     }
   };
@@ -241,7 +241,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
             <RotateCw size={17} className={isRotated ? 'rotated-icon' : ''} />
             <span>{isRotated ? 'Portrait' : 'Rotate'}</span>
           </button>
-
+          {/* 
           <button
             className="fs-video-action-pill close-pill"
             onClick={handleClose}
@@ -250,7 +250,7 @@ export const FullscreenVideoModal: React.FC<FullscreenVideoModalProps> = ({
           >
             <X size={17} />
             <span>Close</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Video Player Frame taking 100% full view */}

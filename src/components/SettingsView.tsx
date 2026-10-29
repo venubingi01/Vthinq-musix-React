@@ -23,7 +23,9 @@ import {
   Heart,
   ChevronRight,
   ShieldCheck,
-  Radio
+  Radio,
+  Download,
+  CheckCircle2
 } from 'lucide-react';
 
 interface FeedbackData {
@@ -43,6 +45,12 @@ export const SettingsView: React.FC = () => {
   const [streamQuality, setStreamQuality] = useState<string>('320');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
+  // PWA Install State
+  const [isInstallable, setIsInstallable] = useState<boolean>(false);
+  const [isInstalled, setIsInstalled] = useState<boolean>(false);
+  const [isIos, setIsIos] = useState<boolean>(false);
+  const [isInstalling, setIsInstalling] = useState<boolean>(false);
+
   // Feedback Form State
   const [rating, setRating] = useState<number>(5);
   const [name, setName] = useState<string>('');
@@ -60,6 +68,74 @@ export const SettingsView: React.FC = () => {
       // Ignore localStorage unavailable
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsInstalled(isStandalone);
+
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(ua);
+    setIsIos(isIosDevice);
+
+    if (window.__deferredPwaPrompt) {
+      setIsInstallable(true);
+    }
+
+    const handlePrompt = () => setIsInstallable(true);
+    const handleInstalled = () => {
+      setIsInstalled(true);
+      setIsInstallable(false);
+      showToast('Sangeetham app installed successfully! 🎉');
+    };
+
+    window.addEventListener('pwa-prompt-available', handlePrompt);
+    window.addEventListener('pwa-app-installed', handleInstalled);
+
+    return () => {
+      window.removeEventListener('pwa-prompt-available', handlePrompt);
+      window.removeEventListener('pwa-app-installed', handleInstalled);
+    };
+  }, [showToast]);
+
+  const handleInstallApp = async () => {
+    if (isInstalled) {
+      showToast('Sangeetham is already installed as a standalone app! 🚀');
+      return;
+    }
+
+    const promptEvent = window.__deferredPwaPrompt;
+    if (promptEvent) {
+      try {
+        setIsInstalling(true);
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          showToast('Installing Sangeetham App... 🎉');
+          window.__deferredPwaPrompt = null;
+          setIsInstalled(true);
+          setIsInstallable(false);
+        } else {
+          showToast('App installation was dismissed.');
+        }
+      } catch (err) {
+        console.warn('PWA install prompt error:', err);
+      } finally {
+        setIsInstalling(false);
+      }
+      return;
+    }
+
+    if (isIos) {
+      showToast('To install on iOS: tap Share (⎋/📤) in Safari, then tap "Add to Home Screen" ➕');
+      return;
+    }
+
+    showToast('To install: click the Install icon (⊕) in your browser address bar or menu (⋮) -> "Install Sangeetham" 🎵');
+  };
 
   const handleQualityChange = (newQ: string) => {
     setStreamQuality(newQ);
@@ -202,7 +278,70 @@ export const SettingsView: React.FC = () => {
             </div>
           </a>
 
-          {/* 2. Send Feedback & Suggestions Button */}
+          {/* 2. PWA App Install Card */}
+          <div
+            className={`settings-card install-pwa-theme-card ${isInstalled ? 'is-installed' : ''}`}
+            onClick={handleInstallApp}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleInstallApp();
+              }
+            }}
+          >
+            <div className="install-pwa-icon-box">
+              {isInstalled ? (
+                <CheckCircle2 size={24} className="install-icon-installed" />
+              ) : (
+                <Download size={24} className="install-icon-download" />
+              )}
+            </div>
+            <div className="card-text-details">
+              <div className="install-title-row">
+                <h5 className="card-heading">
+                  {isInstalled ? 'Sangeetham App Installed' : 'Install Sangeetham App'}
+                </h5>
+                <span className={`install-pill-tag ${isInstalled ? 'installed' : 'ready'}`}>
+                  {isInstalled ? 'Installed ✓' : 'PWA App'}
+                </span>
+              </div>
+              <p className="card-subheading">
+                {isInstalled
+                  ? 'Running as standalone application with offline support & instant launch.'
+                  : 'Install on mobile or desktop for instant launch, offline listening & full-screen UI.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              className={`install-cta-btn ${isInstalled ? 'installed' : ''}`}
+              disabled={isInstalling}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleInstallApp();
+              }}
+            >
+              {isInstalling ? (
+                <>
+                  <Loader2 size={14} className="spinner-rotate" />
+                  <span>Installing...</span>
+                </>
+              ) : isInstalled ? (
+                <>
+                  <Check size={14} />
+                  <span>Installed</span>
+                </>
+              ) : (
+                <>
+                  <Download size={14} />
+                  <span>Install App</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* 3. Send Feedback & Suggestions Button */}
           <button
             type="button"
             className="settings-card feedback-theme-btn"

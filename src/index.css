@@ -3177,6 +3177,7 @@ input:checked+.toggle-slider:before {
   height: 100%;
   border: none;
   display: block;
+  transform: scale(1.2, 1.35);
 }
 
 /* Queue Modal */
@@ -7246,7 +7247,118 @@ input:checked+.toggle-slider:before {
   line-height: 1.4;
 }
 
-/* 2. Feedback Theme Button */
+/* 2. PWA App Install Card */
+.install-pwa-theme-card {
+  background: linear-gradient(135deg, rgba(255, 45, 117, 0.16) 0%, rgba(255, 106, 0, 0.1) 100%);
+  border-color: rgba(255, 45, 117, 0.35);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.install-pwa-theme-card:hover {
+  border-color: rgba(255, 45, 117, 0.65);
+  box-shadow: 0 10px 28px rgba(255, 45, 117, 0.22);
+}
+
+.install-pwa-theme-card.is-installed {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(5, 150, 105, 0.08) 100%);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+.install-pwa-theme-card.is-installed:hover {
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 10px 28px rgba(16, 185, 129, 0.18);
+}
+
+.install-pwa-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 45, 117, 0.14);
+  border: 1px solid rgba(255, 45, 117, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ff2d75;
+  transition: transform 0.2s ease;
+}
+
+.install-pwa-theme-card:hover .install-pwa-icon-box {
+  transform: scale(1.06);
+}
+
+.install-pwa-theme-card.is-installed .install-pwa-icon-box {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #10b981;
+}
+
+.install-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.install-pill-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.install-pill-tag.ready {
+  background: rgba(255, 45, 117, 0.2);
+  color: #ff5e8c;
+  border: 1px solid rgba(255, 45, 117, 0.4);
+}
+
+.install-pill-tag.installed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.install-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: #fff;
+  background: var(--accent-gradient);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  transition: all 0.2s ease;
+}
+
+.install-cta-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 6px 18px rgba(255, 45, 117, 0.5);
+}
+
+.install-cta-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.install-cta-btn.installed {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: none;
+  cursor: default;
+}
+
+/* 3. Feedback Theme Button */
 .feedback-theme-btn {
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(238, 9, 121, 0.1) 100%);
   border-color: rgba(0, 240, 255, 0.32);
