@@ -15,91 +15,19 @@ export function decodeHTMLEntities(text: string): string {
 // 1. Verified Core / Starter Songs from Sangeetham API with active 320kbps & 160kbps streams
 export const STARTER_SONGS: Song[] = [
   {
-    id: 'manasa-vacha-godavari',
-    name: 'Manasavacha',
-    artist: 'Unni Krishnan, Chitra',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/975/Pratidinam-Nee-Darsanam-2013-500x500.jpg',
-    url: 'https://aac.saavncdn.com/975/999f6916adc2a1328000e73bf004bc7a_320.mp4',
+    id: 'CdncOYcw',
+    name: 'Darkhaast',
+    artist: 'Mithoon, Arijit Singh, Sunidhi Chauhan',
+    album: 'Shivaay',
+    image: 'https://c.saavncdn.com/550/Shivaay4-Hindi-2016-500x500.jpg',
+    url: 'https://aac.saavncdn.com/550/0aa1d08ce795857251c8cdb28fc2f998_320.mp4',
     fallbackUrls: [
-      'https://aac.saavncdn.com/975/999f6916adc2a1328000e73bf004bc7a_160.mp4'
+      'https://aac.saavncdn.com/550/0aa1d08ce795857251c8cdb28fc2f998_160.mp4'
     ],
-    duration: 332,
+    duration: 375,
     quality: '320kbps',
-    year: '2006',
-    language: 'Telugu'
-  },
-  {
-    id: 'vennelave-vennelave',
-    name: 'Vennelave Vennelave',
-    artist: 'S.P. Balasubrahmanyam',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/139/Merupu-Kalalu-Telugu-1997-20220601053744-500x500.jpg',
-    url: 'https://aac.saavncdn.com/871/c2febd353f3a076a406fa37510f31f9f_320.mp4',
-    duration: 295,
-    quality: '320kbps',
-    year: '1997',
-    language: 'Telugu'
-  },
-  {
-    id: 'o-cheliya-karthik',
-    name: 'O Cheliya',
-    artist: 'Karthik',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/517/Ala-Vaikunthapurramuloo-Telugu-2019-20200116144338-500x500.jpg',
-    url: 'https://aac.saavncdn.com/517/68cc88035f2fbcd5772e6551bf64c111_320.mp4',
-    duration: 240,
-    quality: '320kbps',
-    year: '2001',
-    language: 'Telugu'
-  },
-  {
-    id: 'nuvvunte-naa-jathaga',
-    name: 'Nuvvunte Naa Jathaga',
-    artist: 'S.P. Balasubrahmanyam',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/871/Brahmastra-Original-Motion-Picture-Soundtrack-Hindi-2022-20221006155213-500x500.jpg',
-    url: 'https://aac.saavncdn.com/871/c2febd353f3a076a406fa37510f31f9f_160.mp4',
-    duration: 345,
-    quality: '320kbps',
-    year: '2015',
-    language: 'Telugu'
-  },
-  {
-    id: 'emayindo-emo-shankar',
-    name: 'Emayindo Emo',
-    artist: 'Shankar Mahadevan',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/396/Godavari-Telugu-2006-20220601053744-500x500.jpg',
-    url: 'https://aac.saavncdn.com/517/339d76dce4db4f43f4721eec2d8f03ef_320.mp4',
-    duration: 280,
-    quality: '320kbps',
-    year: '2004',
-    language: 'Telugu'
-  },
-  {
-    id: 'o-sakhi-chitra',
-    name: 'O Sakhi',
-    artist: 'Chitra',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/139/Merupu-Kalalu-Telugu-1997-20220601053744-500x500.jpg',
-    url: 'https://aac.saavncdn.com/517/68cc88035f2fbcd5772e6551bf64c111_320.mp4',
-    duration: 260,
-    quality: '320kbps',
-    year: '2003',
-    language: 'Telugu'
-  },
-  {
-    id: 'kalusukovalani-unni',
-    name: 'Kalusukovalani',
-    artist: 'Unni Krishnan',
-    album: 'Telugu Hits',
-    image: 'https://c.saavncdn.com/517/Ala-Vaikunthapurramuloo-Telugu-2019-20200116144338-500x500.jpg',
-    url: 'https://aac.saavncdn.com/871/c2febd353f3a076a406fa37510f31f9f_320.mp4',
-    duration: 275,
-    quality: '320kbps',
-    year: '2002',
-    language: 'Telugu'
+    year: '2016',
+    language: 'Hindi'
   },
   {
     id: 'rjkrTnma',
@@ -779,8 +707,10 @@ export async function fetchDevotionalSongs(): Promise<Song[]> {
 // Legacy album ID mapper for seamless compatibility
 const ALBUM_ALIAS_MAP: Record<string, string> = {
   'alb_ala_vaikunthapurramuloo': '17435036',
-  'alb_brahmastra': '38845390',
-  'alb_jawan': '48037104'
+  'alb_merupu_kalalu': '9189182',
+  'alb_sita_ramam': '48037104',
+  'alb_geetha_govindam': '48037104',
+  'alb_telugu_hits': '48037104'
 };
 
 // Get Album Details by ID from Sangeetham API (supports both Albums and Playlists)

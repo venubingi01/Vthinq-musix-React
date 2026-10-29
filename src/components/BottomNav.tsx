@@ -15,8 +15,8 @@ interface NavRouteItem {
 const NAV_ROUTES: NavRouteItem[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/search', label: 'Search', icon: Search },
-  { href: '/favorites', label: 'Favorites', icon: Heart },
   { href: '/player', label: 'Player', icon: PlayCircle },
+  { href: '/favorites', label: 'Favorites', icon: Heart },
   { href: '/settings', label: 'Settings', icon: Settings }
 ];
 
