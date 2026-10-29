@@ -1,8 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AlbumView } from '../../../components/AlbumView';
 
+function AlbumClientInner({ initialAlbumId }: { initialAlbumId: string }) {
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get('id');
+  return <AlbumView albumId={queryId || initialAlbumId} />;
+}
+
 export function AlbumClientPage({ initialAlbumId }: { initialAlbumId: string }) {
-  return <AlbumView albumId={initialAlbumId} />;
+  return (
+    <Suspense fallback={<div className="album-loading-state">Loading Album...</div>}>
+      <AlbumClientInner initialAlbumId={initialAlbumId} />
+    </Suspense>
+  );
 }

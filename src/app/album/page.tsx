@@ -6,7 +6,7 @@ import { AlbumView } from '../../components/AlbumView';
 
 function AlbumContent() {
   const searchParams = useSearchParams();
-  const albumId = searchParams.get('id') || 'alb_ala_vaikunthapurramuloo';
+  const albumId = searchParams.get('id') || '17435036';
   return <AlbumView albumId={albumId} />;
 }
 

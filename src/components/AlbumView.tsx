@@ -97,7 +97,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
     openShareModal({
       title: album.title,
       subtitle: `${album.artists} • ${album.year || '2024'}`,
-      url: `${origin}/album/${album.id}`,
+      url: `${origin}/album?id=${album.id}`,
       image: album.cover,
       type: 'album'
     });
@@ -276,7 +276,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
           {STARTER_ALBUMS.filter((item) => item.id !== album.id).map((other) => (
             <Link
               key={other.id}
-              href={`/album/${other.id}`}
+              href={`/album?id=${other.id}`}
               className="album-card-link"
               style={{ textDecoration: 'none' }}
             >

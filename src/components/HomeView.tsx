@@ -341,7 +341,7 @@ export const HomeView: React.FC = () => {
           {albums.map((album) => (
             <Link
               key={album.id}
-              href={`/album/${album.id}`}
+              href={`/album?id=${album.id}`}
               className="album-card-link"
               style={{ textDecoration: 'none' }}
             >

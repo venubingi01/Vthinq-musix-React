@@ -531,7 +531,7 @@ export const SearchView: React.FC = () => {
                 {albumsResults.map((album) => (
                   <Link
                     key={album.id}
-                    href={`/album/${album.id}`}
+                    href={`/album?id=${album.id}`}
                     className="album-card-link"
                     style={{ textDecoration: 'none' }}
                   >
@@ -577,7 +577,7 @@ export const SearchView: React.FC = () => {
                               openShareModal({
                                 title: album.title,
                                 subtitle: `${album.artists} • ${album.year || '2024'}`,
-                                url: `${origin}/album/${album.id}`,
+                                url: `${origin}/album?id=${album.id}`,
                                 image: album.cover,
                                 type: 'album'
                               });
@@ -720,7 +720,7 @@ export const SearchView: React.FC = () => {
                 {playlistsResults.map((playlist) => (
                   <Link
                     key={playlist.id}
-                    href={`/album/${playlist.id}`}
+                    href={`/album?id=${playlist.id}`}
                     className="album-card-link"
                     style={{ textDecoration: 'none' }}
                   >
