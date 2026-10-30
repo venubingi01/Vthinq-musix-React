@@ -2727,15 +2727,33 @@ input:checked+.toggle-slider:before {
 .hd-studio-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(238, 9, 121, 0.15);
-  color: var(--accent-pink);
-  border: 1px solid rgba(238, 9, 121, 0.3);
-  padding: 4px 10px;
+  gap: 7px;
+  background: rgba(255, 45, 85, 0.15);
+  color: #ff2d55;
+  border: 1px solid rgba(255, 45, 85, 0.35);
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.hd-studio-badge.badge-hq-style {
+  background: rgba(0, 180, 219, 0.15);
+  color: #00f0ff;
+  border-color: rgba(0, 180, 219, 0.4);
+}
+
+.hd-studio-badge.badge-sd-style {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hd-studio-badge:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
 }
 
 .mini-visualizer-wrap {
@@ -8376,6 +8394,85 @@ input:checked+.toggle-slider:before {
   top: 10px;
   right: 10px;
   z-index: 6;
+}
+
+/* Back navigation button in equalizer header */
+.eq-back-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.eq-back-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(1.06);
+}
+
+.equalizer-view-container.embedded {
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 10px 40px 10px;
+}
+
+/* Car Mode Theme Adaptation for Equalizer */
+.equalizer-view-container.car-mode-theme {
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 16px 40px 16px;
+  color: #fff;
+}
+
+.equalizer-view-container.car-mode-theme .eq-main-title {
+  font-size: 1.6rem;
+  letter-spacing: -0.5px;
+}
+
+.equalizer-view-container.car-mode-theme .eq-studio-tabs-bar {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px;
+  gap: 10px;
+}
+
+.equalizer-view-container.car-mode-theme .eq-studio-tab-btn {
+  padding: 13px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.equalizer-view-container.car-mode-theme .eq-studio-tab-btn.active {
+  background: linear-gradient(135deg, rgba(255, 45, 85, 0.45) 0%, rgba(0, 240, 255, 0.45) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35);
+}
+
+.equalizer-view-container.car-mode-theme .eq-master-control-card,
+.equalizer-view-container.car-mode-theme .eq-visualizer-card,
+.equalizer-view-container.car-mode-theme .spatial-modes-grid .spatial-mode-card,
+.equalizer-view-container.car-mode-theme .quality-option-card {
+  background: rgba(18, 22, 38, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+}
+
+.equalizer-view-container.car-mode-theme .eq-presets-grid {
+  gap: 10px;
+}
+
+.equalizer-view-container.car-mode-theme .eq-preset-chip {
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 /* ==========================================================================

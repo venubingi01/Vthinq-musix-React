@@ -40,6 +40,7 @@ import { searchMusicVideo } from '../../services/videoService';
 import '../../styles/mobile-player.css';
 import { Footer } from '../Footer';
 import { QualityBadge } from '../QualityBadge';
+import { EqualizerView } from '../EqualizerView';
 
 export type MobileTab = 'now-playing' | 'lyrics' | 'video' | 'equalizer' | 'queue';
 export type VisualizerMode = 'spectrum' | 'waveform' | 'particles' | 'circle';
@@ -100,7 +101,8 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
     setSpatial3D,
     analyserNode,
     playSong,
-    lyrics
+    lyrics,
+    streamQuality
   } = useMusic();
 
   // Active view state
@@ -263,6 +265,21 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
     }
   };
 
+  // Active streaming quality details for mobile
+  const songQuality = (currentSong.quality || '').toLowerCase();
+  const songUrl = (currentSong.url || '').toLowerCase();
+  const is160Quality =
+    streamQuality === '160' ||
+    songQuality.includes('160') ||
+    (songUrl.includes('_160') && !songUrl.includes('_320'));
+  const is96Quality =
+    !is160Quality &&
+    (streamQuality === '96' ||
+      songQuality.includes('96') ||
+      songQuality.includes('48') ||
+      (songUrl.includes('_96') && !songUrl.includes('_320')));
+  const qualityPropValue = is160Quality ? '160kbps' : is96Quality ? '96kbps' : '320kbps';
+
   return (
     <div className="mobile-player-shell">
       {/* Background ambient album cover blur */}
@@ -319,6 +336,7 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
             />
             <QualityBadge
               song={currentSong}
+              quality={qualityPropValue}
               size="md"
               className="mobile-cover-quality-badge"
             />
@@ -438,138 +456,11 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
 
 
       {/* ===================================================================
-          SCREEN 4: EQUALIZER & AUDIO EFFECTS
+          SCREEN 4: STUDIO EQUALIZER, 3D SPATIAL AUDIO & AUDIO QUALITY
           =================================================================== */}
       {activeTab === 'equalizer' && (
-        <div className="mobile-equalizer-view-body">
-          {/* Segmented Switcher: [ Equalizer | Audio Effects ] */}
-          <div className="mobile-segmented-bar">
-            <button
-              className={`mobile-seg-btn ${eqSubTab === 'equalizer' ? 'active' : ''}`}
-              onClick={() => setEqSubTab('equalizer')}
-            >
-              Equalizer
-            </button>
-            <button
-              className={`mobile-seg-btn ${eqSubTab === 'effects' ? 'active' : ''}`}
-              onClick={() => setEqSubTab('effects')}
-            >
-              Audio Effects
-            </button>
-          </div>
-
-          {/* Presets Row: [ Default | Pop | Rock | Classic | Vocal ] */}
-          <div className="mobile-presets-scroll">
-            {EQ_PRESETS.map((preset) => {
-              const isSelected = JSON.stringify(eqGains) === JSON.stringify(preset.gains);
-              return (
-                <button
-                  key={preset.name}
-                  className={`mobile-preset-chip ${isSelected ? 'active' : ''}`}
-                  onClick={() => applyEqPreset(preset.gains)}
-                >
-                  {preset.name}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 5-Band Vertical Faders (+12dB, 0dB, -12dB) */}
-          <div className="mobile-eq-faders-card">
-            <div className="mobile-eq-faders-row">
-              {/* Scale column */}
-              <div className="mobile-eq-scale-col">
-                <span>+12</span>
-                <span>0</span>
-                <span>-12</span>
-              </div>
-
-              {/* 5 Faders: 60Hz, 230Hz, 910Hz, 3.6kHz, 14kHz */}
-              {BAND_FREQS.map((hz, idx) => (
-                <div key={hz} className="mobile-fader-column">
-                  <div className="mobile-fader-track-box">
-                    <input
-                      type="range"
-                      min={-12}
-                      max={12}
-                      value={eqGains[idx] || 0}
-                      onChange={(e) => setEqBand(idx, parseInt(e.target.value, 10))}
-                      className="mobile-vertical-fader"
-                      aria-label={hz}
-                    />
-                  </div>
-                  <span className="mobile-fader-hz-label">{hz}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Audio Effects Section with Toggle Switches */}
-          <div className="mobile-effects-list">
-            {/* Bass Boost */}
-            <div className="mobile-effect-item">
-              <div className="mobile-effect-info">
-                <Volume2 size={20} className="mobile-effect-icon" />
-                <span className="mobile-effect-title">Bass Boost</span>
-              </div>
-              <label className="mobile-switch">
-                <input
-                  type="checkbox"
-                  checked={bassBoost > 0}
-                  onChange={(e) => setBassBoost(e.target.checked ? 8 : 0)}
-                />
-                <span className="mobile-switch-slider" />
-              </label>
-            </div>
-
-            {/* Virtual Surround (3D Spatial) */}
-            <div className="mobile-effect-item">
-              <div className="mobile-effect-info">
-                <Radio size={20} className="mobile-effect-icon" />
-                <span className="mobile-effect-title">Virtual Surround</span>
-              </div>
-              <label className="mobile-switch">
-                <input
-                  type="checkbox"
-                  checked={spatial3D}
-                  onChange={(e) => setSpatial3D(e.target.checked)}
-                />
-                <span className="mobile-switch-slider" />
-              </label>
-            </div>
-
-            {/* Vocal Clarity */}
-            <div className="mobile-effect-item">
-              <div className="mobile-effect-info">
-                <Sparkles size={20} className="mobile-effect-icon" />
-                <span className="mobile-effect-title">Vocal Clarity</span>
-              </div>
-              <label className="mobile-switch">
-                <input
-                  type="checkbox"
-                  checked={vocalClarity}
-                  onChange={(e) => setVocalClarity(e.target.checked)}
-                />
-                <span className="mobile-switch-slider" />
-              </label>
-            </div>
-
-            {/* Night Mode */}
-            <div className="mobile-effect-item">
-              <div className="mobile-effect-info">
-                <Eye size={20} className="mobile-effect-icon" />
-                <span className="mobile-effect-title">Night Mode</span>
-              </div>
-              <label className="mobile-switch">
-                <input
-                  type="checkbox"
-                  checked={nightMode}
-                  onChange={(e) => setNightMode(e.target.checked)}
-                />
-                <span className="mobile-switch-slider" />
-              </label>
-            </div>
-          </div>
+        <div className="mobile-equalizer-embedded-container" style={{ flex: 1, overflowY: 'auto', padding: '0 4px 80px' }}>
+          <EqualizerView isEmbedded={true} onBack={() => setActiveTab('now-playing')} />
         </div>
       )}
 
@@ -680,6 +571,16 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
         >
           <Video size={20} />
           <span>Watch Video</span>
+        </button>
+
+        <button
+          className={`mobile-nav-tab-btn ${activeTab === 'equalizer' ? 'active' : ''}`}
+          onClick={() => setActiveTab('equalizer')}
+          title="Studio Equalizer & 3D Audio"
+          aria-label="Equalizer"
+        >
+          <Sliders size={20} />
+          <span>Equalizer</span>
         </button>
 
         <button

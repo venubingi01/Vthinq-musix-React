@@ -716,8 +716,22 @@
 }
 
 /* ==========================================================================
-   Screen 4: Equalizer & Audio Effects View
+   Screen 4: Studio Equalizer, 3D Spatial Audio & Audio Quality View
    ========================================================================== */
+.mobile-equalizer-embedded-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.mobile-equalizer-embedded-container::-webkit-scrollbar {
+  display: none;
+}
+
 .mobile-equalizer-view-body {
   position: relative;
   z-index: 2;
@@ -1061,10 +1075,10 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 4px 6px;
   border-radius: 12px;
   transition: all 0.2s ease;
 }

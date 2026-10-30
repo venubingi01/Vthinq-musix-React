@@ -62,7 +62,9 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
     openAddToPlaylistModal,
     goToAlbum,
     lyrics,
-    isLyricsLoading
+    isLyricsLoading,
+    streamQuality,
+    showToast
   } = useMusic();
 
   // Video & View states (defaults to visualizer with synced lyrical video)
@@ -219,6 +221,33 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
     });
   };
 
+  // Active streaming quality details for badges & toast notifications
+  const songQuality = (currentSong.quality || '').toLowerCase();
+  const songUrl = (currentSong.url || '').toLowerCase();
+
+  const is160Quality =
+    streamQuality === '160' ||
+    songQuality.includes('160') ||
+    (songUrl.includes('_160') && !songUrl.includes('_320'));
+
+  const is96Quality =
+    !is160Quality &&
+    (streamQuality === '96' ||
+      songQuality.includes('96') ||
+      songQuality.includes('48') ||
+      (songUrl.includes('_96') && !songUrl.includes('_320')));
+
+  const is320Quality = !is160Quality && !is96Quality;
+
+  const qualityBadgeClass = is160Quality ? 'badge-hq-style' : is96Quality ? 'badge-sd-style' : 'badge-hd-style';
+  const qualityLabelText = is160Quality ? 'HQ 160kbps' : is96Quality ? 'SD 96kbps' : 'ULTRA HD 320kbps';
+  const qualityPropValue = is160Quality ? '160kbps' : is96Quality ? '96kbps' : '320kbps';
+  const qualityToastMessage = is320Quality
+    ? 'Streaming in 320kbps Ultra HD Studio Quality 🔥'
+    : is160Quality
+    ? 'Streaming in 160kbps High Quality Audio 🎧'
+    : 'Streaming in Standard Data Saver Quality (96kbps) 📱';
+
   return (
     <>
       <div className="mobile-player-viewport-only">
@@ -300,8 +329,14 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
             </div>
 
             <div className="player-badges-row">
-              <span className="hd-studio-badge">
-                <Zap size={13} /> ULTRA HD 320kbps
+              <span
+                className={`hd-studio-badge ${qualityBadgeClass}`}
+                style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '7px' }}
+                onClick={() => showToast(qualityToastMessage)}
+                title="Click to check current audio streaming bitrate"
+              >
+                <QualityBadge song={currentSong} quality={qualityPropValue} size="sm" showToastOnClick={false} />
+                <span>{qualityLabelText}</span>
               </span>
             </div>
 
@@ -394,6 +429,7 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
                   />
                   <QualityBadge
                     song={currentSong}
+                    quality={qualityPropValue}
                     size="lg"
                     className="cover-quality-badge-overlay"
                   />
@@ -461,9 +497,14 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
               </div>
 
               <div className="player-badges-row">
-                <span className="hd-studio-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <QualityBadge song={currentSong} size="sm" showToastOnClick={false} />
-                  <span>{currentSong.quality === '160kbps' ? 'HQ 160kbps' : currentSong.quality === '96kbps' ? 'SD 96kbps' : 'ULTRA HD 320kbps'}</span>
+                <span
+                  className={`hd-studio-badge ${qualityBadgeClass}`}
+                  style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '7px' }}
+                  onClick={() => showToast(qualityToastMessage)}
+                  title="Click to check current audio streaming bitrate"
+                >
+                  <QualityBadge song={currentSong} quality={qualityPropValue} size="sm" showToastOnClick={false} />
+                  <span>{qualityLabelText}</span>
                 </span>
                 <div
                   className="mini-visualizer-wrap"

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
+import { AudioQuality } from '../types/music';
 import {
   Settings,
   X,
@@ -38,11 +39,10 @@ interface FeedbackData {
 
 export const SettingsView: React.FC = () => {
   const router = useRouter();
-  const { showToast, currentSong } = useMusic();
+  const { showToast, currentSong, streamQuality, setStreamQuality } = useMusic();
 
   // Settings State
   const [copiedUpi, setCopiedUpi] = useState(false);
-  const [streamQuality, setStreamQuality] = useState<string>('320');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // PWA Install State
@@ -59,15 +59,6 @@ export const SettingsView: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
-
-  useEffect(() => {
-    try {
-      const savedQ = localStorage.getItem('sangeetham_stream_quality') || '320';
-      setStreamQuality(savedQ);
-    } catch {
-      // Ignore localStorage unavailable
-    }
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -138,12 +129,7 @@ export const SettingsView: React.FC = () => {
   };
 
   const handleQualityChange = (newQ: string) => {
-    setStreamQuality(newQ);
-    try {
-      localStorage.setItem('sangeetham_stream_quality', newQ);
-    } catch { }
-    const label = newQ === '320' ? '320kbps Ultra HD 🔥' : newQ === '160' ? '160kbps High Quality' : '96kbps Data Saver';
-    showToast(`Streaming quality set to ${label}`);
+    setStreamQuality(newQ as AudioQuality);
   };
 
   const handleCopyUpi = () => {

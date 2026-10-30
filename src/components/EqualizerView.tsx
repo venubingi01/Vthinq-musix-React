@@ -20,10 +20,23 @@ import {
   Zap,
   CheckCircle2,
   Layers,
-  Activity
+  Activity,
+  ArrowLeft
 } from 'lucide-react';
 
-export const EqualizerView: React.FC = () => {
+export interface EqualizerViewProps {
+  onBack?: () => void;
+  isEmbedded?: boolean;
+  carMode?: boolean;
+  className?: string;
+}
+
+export const EqualizerView: React.FC<EqualizerViewProps> = ({
+  onBack,
+  isEmbedded = false,
+  carMode = false,
+  className = ''
+}) => {
   const {
     // EQ
     eqEnabled,
@@ -393,15 +406,31 @@ export const EqualizerView: React.FC = () => {
   };
 
   return (
-    <div className="equalizer-view-container">
+    <div
+      className={`equalizer-view-container ${isEmbedded ? 'embedded' : ''} ${carMode ? 'car-mode-theme' : ''} ${className}`}
+    >
       {/* Header */}
       <div className="eq-header">
         <div className="eq-title-wrap">
-          <Sliders size={28} className="text-pink" />
+          {onBack && (
+            <button
+              className="eq-back-nav-btn"
+              onClick={onBack}
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft size={22} />
+            </button>
+          )}
+          <Sliders size={carMode ? 32 : 28} className="text-pink" />
           <div>
-            <h1 className="eq-main-title">Audio Studio & Studio Equalizer</h1>
+            <h1 className="eq-main-title">
+              {carMode ? 'Cockpit Audio Studio & Equalizer' : 'Audio Studio & Studio Equalizer'}
+            </h1>
             <p className="eq-subtitle">
-              Hardware-accelerated 7-Band Equalizer, 3D Spatial Audio & HD Bitrate Engine
+              {carMode
+                ? 'Automotive 3D Spatial Cockpit, Studio EQ & HD Bitrate Engine'
+                : 'Hardware-accelerated 7-Band Equalizer, 3D Spatial Audio & HD Bitrate Engine'}
             </p>
           </div>
         </div>

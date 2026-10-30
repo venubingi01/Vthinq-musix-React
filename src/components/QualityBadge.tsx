@@ -23,23 +23,28 @@ export function getQualityBadgeType(
   const q = String(qualityStr || song?.quality || '').toLowerCase();
   const u = String(urlStr || song?.url || '').toLowerCase();
 
-  // 320kbps or 360kbps (as specified by user) -> HD
-  if (
-    q.includes('320') ||
-    q.includes('360') ||
-    u.includes('_320') ||
-    u.includes('320k') ||
-    u.includes('360k')
-  ) {
+  // 1. Check explicit quality string first
+  if (q.includes('160')) {
+    return 'HQ';
+  }
+  if (q.includes('96') || q.includes('48') || q.includes('12')) {
+    return 'SD';
+  }
+  if (q.includes('320') || q.includes('360')) {
     return 'HD';
   }
 
-  // 160kbps -> HQ
-  if (q.includes('160') || u.includes('_160') || u.includes('160k')) {
+  // 2. Check URL patterns if explicit quality is not set
+  if (u.includes('_160') || u.includes('160k')) {
     return 'HQ';
   }
+  if (u.includes('_96') || u.includes('_48') || u.includes('_12') || u.includes('96k')) {
+    return 'SD';
+  }
+  if (u.includes('_320') || u.includes('320k') || u.includes('360k')) {
+    return 'HD';
+  }
 
-  // Default / other -> SD
   return 'SD';
 }
 

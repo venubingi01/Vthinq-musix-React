@@ -1008,17 +1008,45 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setPlaylist(newPlaylist);
     }
 
+    // Honor preferred streaming bitrate if song offers downloadUrls or alternate bitrates
+    let songToPlay = song;
+    const targetBitrate = streamQuality ? `${streamQuality}kbps` : '320kbps';
+    if (song.downloadUrls && song.downloadUrls.length > 0) {
+      const match = song.downloadUrls.find((d) => d.quality === targetBitrate);
+      if (match?.url && match.url !== song.url) {
+        songToPlay = {
+          ...song,
+          url: match.url,
+          quality: targetBitrate
+        };
+      }
+    } else if (streamQuality === '160') {
+      const url160 =
+        song.fallbackUrls?.find((u) => u.includes('_160')) ||
+        song.url.replace(/_(320|96|48|12)\.(mp4|m4a)/, '_160.$2');
+      if (url160) {
+        songToPlay = { ...song, url: url160, quality: '160kbps' };
+      }
+    } else if (streamQuality === '96') {
+      const url96 =
+        song.fallbackUrls?.find((u) => u.includes('_96')) ||
+        song.url.replace(/_(320|160|48|12)\.(mp4|m4a)/, '_96.$2');
+      if (url96) {
+        songToPlay = { ...song, url: url96, quality: '96kbps' };
+      }
+    }
+
     fallbackIndexRef.current = 0;
-    setCurrentSong(song);
+    setCurrentSong(songToPlay);
     setCurrentTime(0);
-    setDuration(song.duration || 0);
+    setDuration(songToPlay.duration || 0);
     setLyrics([]);
     setIsLyricsLoading(true);
 
     if (audioRef.current) {
       setIsLoading(true);
       audioRef.current.crossOrigin = 'anonymous';
-      audioRef.current.src = song.url;
+      audioRef.current.src = songToPlay.url;
       audioRef.current.currentTime = 0;
       audioRef.current.play()
         .then(() => {
@@ -1306,25 +1334,31 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       if (!targetUrl) {
         if (quality === '320') {
-          targetUrl = currentSong.url.replace(/_160\.(mp4|m4a)/, '_320.$1').replace(/_96\.(mp4|m4a)/, '_320.$1');
+          targetUrl =
+            currentSong.fallbackUrls?.find((u) => u.includes('_320')) ||
+            currentSong.url.replace(/_(160|96|48|12)\.(mp4|m4a)/, '_320.$2');
         } else if (quality === '160') {
-          targetUrl = currentSong.url.replace(/_320\.(mp4|m4a)/, '_160.$1').replace(/_96\.(mp4|m4a)/, '_160.$1');
+          targetUrl =
+            currentSong.fallbackUrls?.find((u) => u.includes('_160')) ||
+            currentSong.url.replace(/_(320|96|48|12)\.(mp4|m4a)/, '_160.$2');
         } else {
-          targetUrl = currentSong.url.replace(/_320\.(mp4|m4a)/, '_96.$1').replace(/_160\.(mp4|m4a)/, '_96.$1');
+          targetUrl =
+            currentSong.fallbackUrls?.find((u) => u.includes('_96')) ||
+            currentSong.url.replace(/_(320|160|48|12)\.(mp4|m4a)/, '_96.$2');
         }
       }
 
+      const prevTime = audio.currentTime;
+      const wasPlaying = isPlaying && !audio.paused;
+
+      const updatedSong: Song = {
+        ...currentSong,
+        url: targetUrl || currentSong.url,
+        quality: `${quality}kbps`
+      };
+      setCurrentSong(updatedSong);
+
       if (targetUrl && targetUrl !== audio.src) {
-        const prevTime = audio.currentTime;
-        const wasPlaying = isPlaying && !audio.paused;
-
-        const updatedSong: Song = {
-          ...currentSong,
-          url: targetUrl,
-          quality: `${quality}kbps`
-        };
-        setCurrentSong(updatedSong);
-
         audio.src = targetUrl;
         audio.currentTime = prevTime;
         if (wasPlaying) {
