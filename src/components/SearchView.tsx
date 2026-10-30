@@ -29,8 +29,10 @@ import {
   Flame,
   Clock,
   Sparkles,
-  Share2
+  Share2,
+  ListPlus
 } from 'lucide-react';
+import { QualityBadge } from './QualityBadge';
 
 type SearchCategory = 'albums' | 'songs' | 'charts';
 
@@ -76,7 +78,7 @@ export const SearchView: React.FC = () => {
   const initialTab = (searchParams.get('tab') as SearchCategory) || 'albums';
   const initialQuery = searchParams.get('q') || '';
 
-  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, toggleFavorite, isFavorite, openShareModal, openVoiceSearch } = useMusic();
+  const { playSong, currentSong, isPlaying, pauseSong, resumeSong, toggleFavorite, isFavorite, openShareModal, openVoiceSearch, openAddToPlaylistModal } = useMusic();
 
   // Search category state: ALBUMS FIRST by requirement
   const [searchCategory, setSearchCategory] = useState<SearchCategory>(initialTab);
@@ -100,13 +102,31 @@ export const SearchView: React.FC = () => {
   // Debounce user input by 400ms to eliminate redundant network requests
   const debouncedSearch = useDebounce(searchTerm, 400);
 
-  // Synchronize category tab from URL parameter if user navigates with ?tab=
+  // Synchronize category tab and query from URL parameter if user navigates back or with ?tab=&q=
   useEffect(() => {
     const tabParam = searchParams.get('tab') as SearchCategory;
     if (tabParam && ['albums', 'songs', 'charts'].includes(tabParam)) {
       setSearchCategory(tabParam);
     }
+    const qParam = searchParams.get('q');
+    if (qParam !== null && qParam !== undefined) {
+      setSearchTerm(qParam);
+    }
   }, [searchParams]);
+
+  // Persist latest non-empty search to sessionStorage so Back navigation always remembers
+  useEffect(() => {
+    if (typeof window !== 'undefined' && searchTerm.trim()) {
+      try {
+        sessionStorage.setItem(
+          'sangeetham_last_search',
+          JSON.stringify({ query: searchTerm.trim(), tab: searchCategory })
+        );
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [searchTerm, searchCategory]);
 
   // Main search effect based on current category and debounced query
   useEffect(() => {
@@ -531,7 +551,7 @@ export const SearchView: React.FC = () => {
                 {albumsResults.map((album) => (
                   <Link
                     key={album.id}
-                    href={`/album?id=${album.id}`}
+                    href={`/album?id=${album.id}&from=search&q=${encodeURIComponent(searchTerm)}&tab=albums`}
                     className="album-card-link"
                     style={{ textDecoration: 'none' }}
                   >
@@ -577,7 +597,7 @@ export const SearchView: React.FC = () => {
                               openShareModal({
                                 title: album.title,
                                 subtitle: `${album.artists} • ${album.year || '2024'}`,
-                                url: `${origin}/album?id=${album.id}`,
+                                url: `${origin}/album?id=${album.id}&title=${encodeURIComponent(album.title)}`,
                                 image: album.cover,
                                 type: 'album'
                               });
@@ -629,13 +649,14 @@ export const SearchView: React.FC = () => {
                       className={`search-result-row ${isCurrent ? 'active-row' : ''}`}
                       onClick={() => playSong(song, songsResults)}
                     >
-                      <div className="result-thumb-wrap">
+                      <div className="result-thumb-wrap" style={{ position: 'relative' }}>
                         <img
                           src={song.image}
                           alt={song.name}
                           className="result-thumb"
                           loading="lazy"
                         />
+                        <QualityBadge song={song} size="sm" className="thumb-quality-badge" />
                         <div className="result-play-overlay">
                           <Play size={16} fill="#fff" />
                         </div>
@@ -648,6 +669,14 @@ export const SearchView: React.FC = () => {
                       </div>
 
                       <div className="result-actions" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="share-btn-inline"
+                          onClick={() => openAddToPlaylistModal(song)}
+                          title="Add to Playlist"
+                        >
+                          <ListPlus size={16} />
+                        </button>
+
                         <button
                           className="share-btn-inline"
                           onClick={() => {
@@ -720,7 +749,7 @@ export const SearchView: React.FC = () => {
                 {playlistsResults.map((playlist) => (
                   <Link
                     key={playlist.id}
-                    href={`/album?id=${playlist.id}`}
+                    href={`/album?id=${playlist.id}&from=search&q=${encodeURIComponent(searchTerm || selectedChartChip)}&tab=charts`}
                     className="album-card-link"
                     style={{ textDecoration: 'none' }}
                   >
@@ -757,9 +786,29 @@ export const SearchView: React.FC = () => {
                           <span className="album-card-year">
                             {playlist.language || 'Curated'}
                           </span>
-                          <span className="album-card-year" style={{ color: 'var(--accent-pink)', fontWeight: 700, fontSize: '0.78rem' }}>
-                            PLAYLIST
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              className="share-btn-inline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                                openShareModal({
+                                  title: playlist.title,
+                                  subtitle: `${playlist.artists} • ${playlist.year || '2024'}`,
+                                  url: `${origin}/album?id=${playlist.id}&title=${encodeURIComponent(playlist.title)}`,
+                                  image: playlist.cover,
+                                  type: 'album'
+                                });
+                              }}
+                              title="Share Playlist"
+                            >
+                              <Share2 size={14} />
+                            </button>
+                            <span className="album-card-year" style={{ color: 'var(--accent-pink)', fontWeight: 700, fontSize: '0.78rem' }}>
+                              PLAYLIST
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

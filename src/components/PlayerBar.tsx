@@ -19,9 +19,12 @@ import {
   Share2,
   Sparkles,
   Car,
-  ListMusic
+  ListMusic,
+  Disc,
+  ListPlus
 } from 'lucide-react';
 import { QueueModal } from './QueueModal';
+import { QualityBadge } from './QualityBadge';
 
 // Format seconds to mm:ss
 function formatTime(seconds: number): string {
@@ -54,7 +57,9 @@ export const PlayerBar: React.FC = () => {
     toggleFavorite,
     isFavorite,
     openShareModal,
-    openFullscreenVisualizer
+    openFullscreenVisualizer,
+    goToAlbum,
+    openAddToPlaylistModal
   } = useMusic();
 
   const pathname = usePathname();
@@ -86,7 +91,7 @@ export const PlayerBar: React.FC = () => {
       <div className="player-bar-content">
         {/* Track Info - Link to /player */}
         <Link href="/player" className="player-track-info" style={{ textDecoration: 'none' }}>
-          <div className="track-cover-wrapper">
+          <div className="track-cover-wrapper" style={{ position: 'relative' }}>
             <img
               key={currentSong.id}
               src={currentSong.image}
@@ -94,6 +99,7 @@ export const PlayerBar: React.FC = () => {
               className="track-cover"
               loading="lazy"
             />
+            <QualityBadge song={currentSong} size="sm" className="track-cover-quality-badge" />
           </div>
           <div className="track-text">
             <span className="track-title" title={currentSong.name}>
@@ -114,6 +120,32 @@ export const PlayerBar: React.FC = () => {
             aria-label="Favorite button"
           >
             <Heart size={18} fill={isFav ? '#ff3b30' : 'none'} color={isFav ? '#ff3b30' : 'currentColor'} />
+          </button>
+
+          <button
+            className="fav-btn-inline"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              goToAlbum(currentSong);
+            }}
+            title={`Go to Album: ${currentSong.album}`}
+            aria-label="Go to Album"
+          >
+            <Disc size={17} />
+          </button>
+
+          <button
+            className="fav-btn-inline"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openAddToPlaylistModal(currentSong);
+            }}
+            title="Add to Playlist"
+            aria-label="Add to Playlist"
+          >
+            <ListPlus size={17} />
           </button>
         </Link>
 

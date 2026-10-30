@@ -1,4 +1,5 @@
 import type { Song, Album } from '../types/music';
+import { queryClient } from './queryClient';
 
 // Primary Sangeetham API endpoint
 export const SANGEETHAM_API_BASE = 'https://sangeetham-api.onrender.com/api';
@@ -19,6 +20,7 @@ export const STARTER_SONGS: Song[] = [
     "name": "Darkhaast",
     "artist": "Mithoon, Arijit Singh, Sunidhi Chauhan",
     "album": "Shivaay",
+    "albumId": "2659075",
     "image": "https://c.saavncdn.com/550/Shivaay4-Hindi-2016-500x500.jpg",
     "url": "https://aac.saavncdn.com/550/667292c2024814298696b68c971b171e_320.mp4",
     "fallbackUrls": [
@@ -37,6 +39,7 @@ export const STARTER_SONGS: Song[] = [
     name: 'Kesariya',
     artist: 'Pritam, Arijit Singh, Amitabh Bhattacharya',
     album: 'Brahmastra',
+    albumId: '38845390',
     image: 'https://c.saavncdn.com/871/Brahmastra-Original-Motion-Picture-Soundtrack-Hindi-2022-20221006155213-500x500.jpg',
     url: 'https://aac.saavncdn.com/871/c2febd353f3a076a406fa37510f31f9f_320.mp4',
     fallbackUrls: [
@@ -52,6 +55,7 @@ export const STARTER_SONGS: Song[] = [
     name: 'Samajavaragamana',
     artist: 'Sid Sriram',
     album: 'Ala Vaikunthapurramuloo',
+    albumId: '17435036',
     image: 'https://c.saavncdn.com/517/Ala-Vaikunthapurramuloo-Telugu-2019-20200116144338-500x500.jpg',
     url: 'https://aac.saavncdn.com/517/339d76dce4db4f43f4721eec2d8f03ef_320.mp4',
     fallbackUrls: [
@@ -67,6 +71,7 @@ export const STARTER_SONGS: Song[] = [
     name: 'Buttabomma',
     artist: 'Armaan Malik',
     album: 'Ala Vaikunthapurramuloo',
+    albumId: '17435036',
     image: 'https://c.saavncdn.com/517/Ala-Vaikunthapurramuloo-Telugu-2019-20200116144338-500x500.jpg',
     url: 'https://aac.saavncdn.com/517/68cc88035f2fbcd5772e6551bf64c111_320.mp4',
     fallbackUrls: [
@@ -82,6 +87,7 @@ export const STARTER_SONGS: Song[] = [
     name: 'Chaleya',
     artist: 'Anirudh Ravichander, Arijit Singh, Shilpa Rao',
     album: 'Jawan',
+    albumId: '48037104',
     image: 'https://c.saavncdn.com/047/Jawan-Hindi-2023-20230921190854-500x500.jpg',
     url: 'https://aac.saavncdn.com/047/d1366530468931703ac909e82a3ee788_320.mp4',
     fallbackUrls: [
@@ -97,6 +103,7 @@ export const STARTER_SONGS: Song[] = [
     name: 'Hukum',
     artist: 'Dinker kalvala, Anirudh Ravichander',
     album: 'Jailer',
+    albumId: '47798363',
     image: 'https://c.saavncdn.com/435/Jailer-Telugu-2023-20230810132954-500x500.jpg',
     url: 'https://aac.saavncdn.com/435/4161a58e6cff0010c02431e6c21728d9_320.mp4',
     fallbackUrls: [
@@ -395,10 +402,15 @@ export function normalizeSong(raw: any): Song | null {
   artist = decodeHTMLEntities(artist);
 
   let album = 'Sangeetham Music';
+  let albumId: string | undefined;
   if (typeof raw.album === 'string') {
     album = raw.album;
-  } else if (raw.album && typeof raw.album === 'object' && raw.album.name) {
-    album = raw.album.name;
+  } else if (raw.album && typeof raw.album === 'object') {
+    if (raw.album.name) album = raw.album.name;
+    if (raw.album.id) albumId = String(raw.album.id);
+  }
+  if (!albumId && (raw.albumid || raw.album_id)) {
+    albumId = String(raw.albumid || raw.album_id);
   }
   album = decodeHTMLEntities(album);
 
@@ -414,17 +426,40 @@ export function normalizeSong(raw: any): Song | null {
 
   let url = '';
   const fallbackUrls: string[] = [];
+  const downloadUrls: { quality: string; url: string }[] = [];
+
+  let userQualityPref = '320';
+  if (typeof window !== 'undefined') {
+    try {
+      userQualityPref = localStorage.getItem('sangeetham_stream_quality') || '320';
+    } catch {
+      // ignore
+    }
+  }
 
   if (Array.isArray(raw.downloadUrl) && raw.downloadUrl.length > 0) {
-    const q320 = raw.downloadUrl.find((d: any) => d.quality === '320kbps');
-    const q160 = raw.downloadUrl.find((d: any) => d.quality === '160kbps');
-
-    const highest = q320 || q160 || raw.downloadUrl[raw.downloadUrl.length - 1];
-    url = highest?.url || highest?.link || '';
-
     raw.downloadUrl.forEach((d: any) => {
       const u = d.url || d.link;
-      if (u && u !== url) fallbackUrls.push(u);
+      const q = String(d.quality || '').trim();
+      if (u) {
+        downloadUrls.push({ quality: q, url: u });
+      }
+    });
+
+    const targetQuality = userQualityPref === '160' ? '160kbps' : userQualityPref === '96' ? '96kbps' : '320kbps';
+    let matched = downloadUrls.find((d) => d.quality === targetQuality);
+    if (!matched) {
+      matched =
+        downloadUrls.find((d) => d.quality === '320kbps') ||
+        downloadUrls.find((d) => d.quality === '160kbps') ||
+        downloadUrls[downloadUrls.length - 1];
+    }
+    url = matched?.url || '';
+
+    downloadUrls.forEach((d) => {
+      if (d.url && d.url !== url && !fallbackUrls.includes(d.url)) {
+        fallbackUrls.push(d.url);
+      }
     });
   } else if (raw.media_preview_url || raw.media_url) {
     url = raw.media_url || raw.media_preview_url;
@@ -432,18 +467,30 @@ export function normalizeSong(raw: any): Song | null {
 
   if (!url) return null;
 
+  let quality = '320kbps';
+  if (url.includes('_160') || downloadUrls.find((d) => d.url === url && d.quality === '160kbps')) {
+    quality = '160kbps';
+  } else if (url.includes('_96') || downloadUrls.find((d) => d.url === url && d.quality === '96kbps')) {
+    quality = '96kbps';
+  } else if (url.includes('_320') || downloadUrls.find((d) => d.url === url && d.quality === '320kbps')) {
+    quality = '320kbps';
+  }
+
   return {
     id,
     name,
     artist,
     album,
+    albumId,
     image,
     url,
+    downloadUrls: downloadUrls.length > 0 ? downloadUrls : undefined,
     fallbackUrls,
     duration: typeof raw.duration === 'number' ? raw.duration : parseInt(raw.duration || '200', 10),
-    quality: '320kbps',
+    quality,
     year: raw.year ? String(raw.year) : undefined,
-    language: raw.language
+    language: raw.language,
+    raw
   };
 }
 
@@ -490,8 +537,8 @@ export function normalizeAlbum(raw: any): Album | null {
   };
 }
 
-// Search songs using Sangeetham API with timeout & verified local fallback
-export async function searchSongs(query: string, page = 1, limit = 20): Promise<Song[]> {
+// Internal search songs without caching wrapper
+async function internalSearchSongs(query: string, page = 1, limit = 20): Promise<Song[]> {
   if (!query.trim()) return [];
 
   try {
@@ -518,10 +565,8 @@ export async function searchSongs(query: string, page = 1, limit = 20): Promise<
     console.warn('Sangeetham API searchSongs note:', err);
   }
 
-  // If page > 1, do not return starter fallback on failure or exhaustion
   if (page > 1) return [];
 
-  // Filter starter list as offline fallback
   const qLower = query.toLowerCase();
   const allStarter = [...STARTER_SONGS, ...TELUGU_SONGS, ...HINDI_SONGS, ...DEVOTIONAL_SONGS];
   return allStarter.filter(
@@ -529,8 +574,19 @@ export async function searchSongs(query: string, page = 1, limit = 20): Promise<
   );
 }
 
-// Search albums using Sangeetham API with timeout & verified local fallback
-export async function searchAlbums(query: string, page = 1, limit = 20): Promise<Album[]> {
+// Search songs using TanStack Query caching
+export async function searchSongs(query: string, page = 1, limit = 20): Promise<Song[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  return queryClient.fetchQuery({
+    queryKey: ['searchSongs', trimmed.toLowerCase(), page, limit],
+    queryFn: () => internalSearchSongs(trimmed, page, limit),
+    staleTime: 1000 * 60 * 10
+  });
+}
+
+// Internal search albums
+async function internalSearchAlbums(query: string, page = 1, limit = 20): Promise<Album[]> {
   if (!query.trim()) return page === 1 ? STARTER_ALBUMS : [];
 
   try {
@@ -557,15 +613,24 @@ export async function searchAlbums(query: string, page = 1, limit = 20): Promise
     console.warn('Sangeetham API searchAlbums note:', err);
   }
 
-  // If page > 1, do not return starter fallback on failure or exhaustion
   if (page > 1) return [];
 
-  // Filter starter albums as fallback
   const qLower = query.toLowerCase();
   const matched = STARTER_ALBUMS.filter(
     (a) => a.title.toLowerCase().includes(qLower) || a.artists.toLowerCase().includes(qLower)
   );
   return matched.length > 0 ? matched : STARTER_ALBUMS;
+}
+
+// Search albums using TanStack Query caching
+export async function searchAlbums(query: string, page = 1, limit = 20): Promise<Album[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return page === 1 ? STARTER_ALBUMS : [];
+  return queryClient.fetchQuery({
+    queryKey: ['searchAlbums', trimmed.toLowerCase(), page, limit],
+    queryFn: () => internalSearchAlbums(trimmed, page, limit),
+    staleTime: 1000 * 60 * 10
+  });
 }
 
 // Curated Top Starter Playlists & Charts
@@ -644,8 +709,8 @@ export const STARTER_PLAYLISTS: Album[] = [
   }
 ];
 
-// Search playlists using Sangeetham API with timeout & verified local fallback
-export async function searchPlaylists(query: string, page = 1, limit = 20): Promise<Album[]> {
+// Internal search playlists
+async function internalSearchPlaylists(query: string, page = 1, limit = 20): Promise<Album[]> {
   if (!query.trim()) return page === 1 ? STARTER_PLAYLISTS : [];
 
   try {
@@ -672,10 +737,8 @@ export async function searchPlaylists(query: string, page = 1, limit = 20): Prom
     console.warn('Sangeetham API searchPlaylists note:', err);
   }
 
-  // If page > 1, do not return starter fallback on failure or exhaustion
   if (page > 1) return [];
 
-  // Filter fallback
   const qLower = query.toLowerCase();
   const matched = STARTER_PLAYLISTS.filter(
     (p) => p.title.toLowerCase().includes(qLower) || p.artists.toLowerCase().includes(qLower)
@@ -683,28 +746,63 @@ export async function searchPlaylists(query: string, page = 1, limit = 20): Prom
   return matched.length > 0 ? matched : STARTER_PLAYLISTS;
 }
 
-// Get Top Charts songs via Sangeetham API
+// Search playlists using TanStack Query caching
+export async function searchPlaylists(query: string, page = 1, limit = 20): Promise<Album[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return page === 1 ? STARTER_PLAYLISTS : [];
+  return queryClient.fetchQuery({
+    queryKey: ['searchPlaylists', trimmed.toLowerCase(), page, limit],
+    queryFn: () => internalSearchPlaylists(trimmed, page, limit),
+    staleTime: 1000 * 60 * 10
+  });
+}
+
+// Get Top Charts songs via Sangeetham API with TanStack Query caching
 export async function fetchTopCharts(playlistQuery: string): Promise<Song[]> {
-  const songs = await searchSongs(playlistQuery, 1, 15);
-  return songs.length > 0 ? songs : STARTER_SONGS;
+  return queryClient.fetchQuery({
+    queryKey: ['topCharts', playlistQuery.trim().toLowerCase()],
+    queryFn: async () => {
+      const songs = await searchSongs(playlistQuery, 1, 15);
+      return songs.length > 0 ? songs : STARTER_SONGS;
+    },
+    staleTime: 1000 * 60 * 10
+  });
 }
 
 // Get Telugu songs via Sangeetham API
 export async function fetchTeluguSongs(): Promise<Song[]> {
-  const songs = await searchSongs('telugu latest hits', 1, 8);
-  return songs.length > 0 ? songs : TELUGU_SONGS;
+  return queryClient.fetchQuery({
+    queryKey: ['categorySongs', 'telugu'],
+    queryFn: async () => {
+      const songs = await searchSongs('telugu latest hits', 1, 8);
+      return songs.length > 0 ? songs : TELUGU_SONGS;
+    },
+    staleTime: 1000 * 60 * 10
+  });
 }
 
 // Get Hindi songs via Sangeetham API
 export async function fetchHindiSongs(): Promise<Song[]> {
-  const songs = await searchSongs('bollywood top hindi hits', 1, 8);
-  return songs.length > 0 ? songs : HINDI_SONGS;
+  return queryClient.fetchQuery({
+    queryKey: ['categorySongs', 'hindi'],
+    queryFn: async () => {
+      const songs = await searchSongs('bollywood top hindi hits', 1, 8);
+      return songs.length > 0 ? songs : HINDI_SONGS;
+    },
+    staleTime: 1000 * 60 * 10
+  });
 }
 
 // Get Devotional songs via Sangeetham API
 export async function fetchDevotionalSongs(): Promise<Song[]> {
-  const songs = await searchSongs('popular devotional songs', 1, 8);
-  return songs.length > 0 ? songs : DEVOTIONAL_SONGS;
+  return queryClient.fetchQuery({
+    queryKey: ['categorySongs', 'devotional'],
+    queryFn: async () => {
+      const songs = await searchSongs('popular devotional songs', 1, 8);
+      return songs.length > 0 ? songs : DEVOTIONAL_SONGS;
+    },
+    staleTime: 1000 * 60 * 10
+  });
 }
 
 // Legacy album ID mapper for seamless compatibility
@@ -716,8 +814,8 @@ const ALBUM_ALIAS_MAP: Record<string, string> = {
   'alb_telugu_hits': '48037104'
 };
 
-// Get Album Details by ID from Sangeetham API (supports both Albums and Playlists)
-export async function getAlbumDetails(albumId: string): Promise<Album | null> {
+// Internal album / playlist details resolver with limit=100 & multi-stage lookup
+async function internalGetAlbumDetails(albumId: string, fallbackTitle?: string): Promise<Album | null> {
   const targetId = ALBUM_ALIAS_MAP[albumId] || albumId;
 
   // Check local starter albums & playlists first
@@ -726,46 +824,82 @@ export async function getAlbumDetails(albumId: string): Promise<Album | null> {
   );
   if (localMatch && localMatch.songs && localMatch.songs.length > 2) return localMatch;
 
+  // 1. Try albums endpoint with &limit=100
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    // 1. Try albums endpoint first
-    const url = `${SANGEETHAM_API_BASE}/albums?id=${encodeURIComponent(targetId)}`;
+    const url = `${SANGEETHAM_API_BASE}/albums?id=${encodeURIComponent(targetId)}&limit=100`;
     const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
       const raw = data?.data || data;
       if (raw && (raw.name || raw.title) && Array.isArray(raw.songs) && raw.songs.length > 0) {
-        clearTimeout(timeoutId);
         const norm = normalizeAlbum(raw);
-        if (norm) return norm;
+        if (norm && norm.songs && norm.songs.length > 0) return norm;
       }
     }
+  } catch (err) {
+    console.warn('Sangeetham API albums endpoint note:', err);
+  }
 
-    // 2. Fallback to playlists endpoint for chart / playlist collections
-    const playlistUrl = `${SANGEETHAM_API_BASE}/playlists?id=${encodeURIComponent(targetId)}`;
-    const pRes = await fetch(playlistUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
+  // 2. Try playlists endpoint with &limit=100 (crucial for charts / playlists like Chiranjeevi 50 tracks)
+  try {
+    const pController = new AbortController();
+    const pTimeoutId = setTimeout(() => pController.abort(), 8000);
+
+    const playlistUrl = `${SANGEETHAM_API_BASE}/playlists?id=${encodeURIComponent(targetId)}&limit=100`;
+    const pRes = await fetch(playlistUrl, { signal: pController.signal });
+    clearTimeout(pTimeoutId);
 
     if (pRes.ok) {
       const pData = await pRes.json();
       const pRaw = pData?.data || pData;
-      if (pRaw && (pRaw.name || pRaw.title)) {
+      if (pRaw && (pRaw.name || pRaw.title) && Array.isArray(pRaw.songs) && pRaw.songs.length > 0) {
         const norm = normalizeAlbum(pRaw);
-        if (norm) return norm;
+        if (norm && norm.songs && norm.songs.length > 0) return norm;
       }
     }
   } catch (err) {
-    console.warn('Sangeetham API getAlbumDetails note:', err);
+    console.warn('Sangeetham API playlists endpoint note:', err);
+  }
+
+  // 3. Fallback: Search by title if provided (for shared links with title)
+  if (fallbackTitle && fallbackTitle.trim().length > 1) {
+    try {
+      const searchRes = await internalSearchAlbums(fallbackTitle, 1, 5);
+      if (searchRes.length > 0 && searchRes[0].id !== targetId) {
+        const full = await internalGetAlbumDetails(searchRes[0].id);
+        if (full && full.songs && full.songs.length > 0) return full;
+      }
+      const pSearchRes = await internalSearchPlaylists(fallbackTitle, 1, 5);
+      if (pSearchRes.length > 0 && pSearchRes[0].id !== targetId) {
+        const full = await internalGetAlbumDetails(pSearchRes[0].id);
+        if (full && full.songs && full.songs.length > 0) return full;
+      }
+    } catch (e) {
+      console.warn('Fallback search by title error:', e);
+    }
   }
 
   return localMatch || STARTER_ALBUMS[0];
 }
 
+// Get Album Details by ID with TanStack Query caching
+export async function getAlbumDetails(albumId: string, fallbackTitle?: string): Promise<Album | null> {
+  if (!albumId) return STARTER_ALBUMS[0];
+  return queryClient.fetchQuery({
+    queryKey: ['albumDetails', albumId, fallbackTitle || ''],
+    queryFn: () => internalGetAlbumDetails(albumId, fallbackTitle),
+    staleTime: 1000 * 60 * 15 // 15 minutes cache
+  });
+}
+
 // Get Song by ID from Sangeetham API (for deep-linking & shared URLs)
-export async function getSongById(songId: string): Promise<Song | null> {
+// Internal getSongById
+async function internalGetSongById(songId: string): Promise<Song | null> {
   if (!songId) return null;
 
   // 1. Search in local curated collections first
@@ -826,4 +960,14 @@ export async function getSongById(songId: string): Promise<Song | null> {
   }
 
   return null;
+}
+
+// Get Song by ID with TanStack Query caching
+export async function getSongById(songId: string): Promise<Song | null> {
+  if (!songId) return null;
+  return queryClient.fetchQuery({
+    queryKey: ['song', songId],
+    queryFn: () => internalGetSongById(songId),
+    staleTime: 1000 * 60 * 30 // 30 minutes cache
+  });
 }

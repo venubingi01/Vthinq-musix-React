@@ -8,6 +8,7 @@ import { PlayerBar } from './PlayerBar';
 import { AIChatModal } from './AIChatModal';
 import { AIFloatingButton } from './AIFloatingButton';
 import { ShareModal } from './ShareModal';
+import { AddToPlaylistModal } from './AddToPlaylistModal';
 import { Toast } from './Toast';
 import { FullscreenVisualizer } from './FullscreenVisualizer';
 import { PWAProvider } from './PWAProvider';
@@ -57,6 +58,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
       {/* Universal Share Modal & Toast Feedback */}
       <ShareModal />
+      <AddToPlaylistModal />
       <Toast />
       <PWAProvider />
 

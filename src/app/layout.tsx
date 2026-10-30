@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import '../index.css';
 import '../styles/car-mode.css';
 import '../styles/mobile-player.css';
+import { QueryProvider } from '../components/QueryProvider';
 import { MusicProvider } from '../context/MusicContext';
 import { AppShell } from '../components/AppShell';
 
@@ -46,9 +47,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <MusicProvider>
-          <AppShell>{children}</AppShell>
-        </MusicProvider>
+        <QueryProvider>
+          <MusicProvider>
+            <AppShell>{children}</AppShell>
+          </MusicProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -1,15 +1,32 @@
+export interface SongDownloadUrl {
+  quality: string;
+  url: string;
+}
+
 export interface Song {
   id: string;
   name: string;
   artist: string;
   album: string;
+  albumId?: string;
   image: string;
   url: string;
+  downloadUrls?: SongDownloadUrl[];
   fallbackUrls?: string[];
   duration?: number; // duration in seconds
   quality?: string;
   year?: string;
   language?: string;
+  raw?: any;
+}
+
+export interface UserPlaylist {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: number;
+  cover?: string;
+  songs: Song[];
 }
 
 export interface Album {
@@ -31,9 +48,22 @@ export interface TimedLyric {
 
 export type TabType = 'home' | 'search' | 'favorites' | 'player' | 'lyrics' | 'equalizer' | 'album';
 
+export type SpatialMode = 'orbit' | 'wide' | 'hall' | 'cinema' | 'vocal';
+
+export type AudioQuality = '320' | '160' | '96';
+
+export interface EqualizerBandConfig {
+  freq: number;
+  type: BiquadFilterType;
+  label: string;
+  q?: number;
+}
+
 export interface EqualizerPreset {
   name: string;
-  gains: number[]; // 5 band values in dB (-12 to +12)
+  key?: string;
+  gains: number[]; // 7 band values in dB (-12 to +12)
+  preamp?: number;
 }
 
 import type { GeneratedPlaylist, SongFactSheet } from './ai';

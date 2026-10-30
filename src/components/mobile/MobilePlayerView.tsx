@@ -29,7 +29,9 @@ import {
   RotateCcw,
   Share2,
   X,
-  Check
+  Check,
+  Disc,
+  ListPlus
 } from 'lucide-react';
 import { Visualizer } from '../Visualizer';
 import { LyricalVisualizer } from '../LyricalVisualizer';
@@ -37,6 +39,7 @@ import { FullscreenVideoModal } from '../FullscreenVideoModal';
 import { searchMusicVideo } from '../../services/videoService';
 import '../../styles/mobile-player.css';
 import { Footer } from '../Footer';
+import { QualityBadge } from '../QualityBadge';
 
 export type MobileTab = 'now-playing' | 'lyrics' | 'video' | 'equalizer' | 'queue';
 export type VisualizerMode = 'spectrum' | 'waveform' | 'particles' | 'circle';
@@ -86,6 +89,8 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
     isFavorite,
     openShareModal,
     openFullscreenVisualizer,
+    openAddToPlaylistModal,
+    goToAlbum,
     eqGains,
     setEqBand,
     applyEqPreset,
@@ -306,11 +311,16 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
       {activeTab === 'now-playing' && (
         <div className="mobile-nowplaying-card">
           {/* Centered Large Album Art with glowing frame */}
-          <div className="mobile-artwork-container">
+          <div className="mobile-artwork-container" style={{ position: 'relative' }}>
             <img
               src={currentSong.image}
               alt={currentSong.name}
               className="mobile-artwork-img"
+            />
+            <QualityBadge
+              song={currentSong}
+              size="md"
+              className="mobile-cover-quality-badge"
             />
           </div>
 
@@ -322,13 +332,35 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
               </h1>
               <p className="mobile-artist-name">{currentSong.artist}</p>
             </div>
-            <button
-              className={`mobile-heart-btn ${isFav ? 'is-fav' : ''}`}
-              onClick={() => toggleFavorite(currentSong)}
-              aria-label="Favorite button"
-            >
-              <Heart size={22} fill={isFav ? '#ff3366' : 'none'} color={isFav ? '#ff3366' : 'currentColor'} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                className="mobile-header-icon-btn"
+                onClick={() => goToAlbum(currentSong)}
+                title={`Go to Album: ${currentSong.album}`}
+                aria-label="Go to Album"
+                style={{ width: '38px', height: '38px' }}
+              >
+                <Disc size={20} />
+              </button>
+
+              <button
+                className="mobile-header-icon-btn"
+                onClick={() => openAddToPlaylistModal(currentSong)}
+                title="Add to Playlist"
+                aria-label="Add to Playlist"
+                style={{ width: '38px', height: '38px' }}
+              >
+                <ListPlus size={20} />
+              </button>
+
+              <button
+                className={`mobile-heart-btn ${isFav ? 'is-fav' : ''}`}
+                onClick={() => toggleFavorite(currentSong)}
+                aria-label="Favorite button"
+              >
+                <Heart size={22} fill={isFav ? '#ff3366' : 'none'} color={isFav ? '#ff3366' : 'currentColor'} />
+              </button>
+            </div>
           </div>
 
           {/* Scrubber Seek Bar with 1:24 left and 5:32 right */}

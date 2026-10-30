@@ -22,9 +22,12 @@ import {
   Quote,
   Music2,
   Share2,
-  Sparkles
+  Sparkles,
+  Disc,
+  ListPlus
 } from 'lucide-react';
 import { MobilePlayerView, MobileTab } from './mobile/MobilePlayerView';
+import { QualityBadge } from './QualityBadge';
 
 interface PlayerViewProps {
   initialMobileTab?: MobileTab;
@@ -56,6 +59,8 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
     isFavorite,
     openShareModal,
     openFullscreenVisualizer,
+    openAddToPlaylistModal,
+    goToAlbum,
     lyrics,
     isLyricsLoading
   } = useMusic();
@@ -387,6 +392,11 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
                     alt={currentSong.name}
                     className="cover-art-large"
                   />
+                  <QualityBadge
+                    song={currentSong}
+                    size="lg"
+                    className="cover-quality-badge-overlay"
+                  />
                 </div>
               )}
 
@@ -439,12 +449,21 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
                   {currentSong.name}
                 </h1>
                 <p className="player-artist-name">{currentSong.artist}</p>
-                <span className="player-album-badge">{currentSong.album}</span>
+                <span
+                  className="player-album-badge"
+                  onClick={() => goToAlbum(currentSong)}
+                  style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  title={`Go to Album: ${currentSong.album}`}
+                >
+                  <Disc size={13} className="text-pink" />
+                  <span>{currentSong.album}</span>
+                </span>
               </div>
 
               <div className="player-badges-row">
-                <span className="hd-studio-badge">
-                  <Zap size={13} /> ULTRA HD 320kbps
+                <span className="hd-studio-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <QualityBadge song={currentSong} size="sm" showToastOnClick={false} />
+                  <span>{currentSong.quality === '160kbps' ? 'HQ 160kbps' : currentSong.quality === '96kbps' ? 'SD 96kbps' : 'ULTRA HD 320kbps'}</span>
                 </span>
                 <div
                   className="mini-visualizer-wrap"
@@ -489,6 +508,24 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
                   <Sliders size={18} />
                   <span>EQ & 3D</span>
                 </Link>
+
+                <button
+                  className="player-tool-btn"
+                  onClick={() => goToAlbum(currentSong)}
+                  title={`Go to Album: ${currentSong.album}`}
+                >
+                  <Disc size={18} className="text-pink" />
+                  <span>Album</span>
+                </button>
+
+                <button
+                  className="player-tool-btn"
+                  onClick={() => openAddToPlaylistModal(currentSong)}
+                  title="Add to Playlist"
+                >
+                  <ListPlus size={18} />
+                  <span>Playlist</span>
+                </button>
 
                 <button
                   className="player-tool-btn"

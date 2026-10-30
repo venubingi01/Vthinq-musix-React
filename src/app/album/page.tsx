@@ -6,8 +6,12 @@ import { AlbumView } from '../../components/AlbumView';
 
 function AlbumContent() {
   const searchParams = useSearchParams();
-  const albumId = searchParams.get('id') || '17435036';
-  return <AlbumView albumId={albumId} />;
+  const queryId =
+    searchParams.get('id') ||
+    searchParams.get('albumId') ||
+    (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : null) ||
+    '17435036';
+  return <AlbumView albumId={queryId} />;
 }
 
 export default function AlbumDefaultPage() {

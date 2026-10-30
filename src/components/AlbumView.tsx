@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMusic } from '../context/MusicContext';
 import { getAlbumDetails, STARTER_ALBUMS } from '../services/saavnApi';
 import type { Album } from '../types/music';
@@ -15,8 +16,10 @@ import {
   Loader2,
   Music2,
   Share2,
-  Radio
+  Radio,
+  ListPlus
 } from 'lucide-react';
+import { QualityBadge } from './QualityBadge';
 
 // Format seconds to mm:ss
 function formatDuration(seconds?: number): string {
@@ -31,7 +34,14 @@ interface AlbumViewProps {
 }
 
 export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunthapurramuloo' }) => {
-  const { playSong, currentSong, isPlaying, toggleFavorite, isFavorite, openShareModal } = useMusic();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromParam = searchParams.get('from');
+  const qParam = searchParams.get('q');
+  const tabParam = searchParams.get('tab');
+  const titleParam = searchParams.get('title');
+
+  const { playSong, currentSong, isPlaying, toggleFavorite, isFavorite, openShareModal, openAddToPlaylistModal } = useMusic();
   const [album, setAlbum] = useState<Album | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -39,7 +49,15 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
     let isMounted = true;
     setIsLoading(true);
 
-    getAlbumDetails(albumId)
+    // Resolve exact album ID from URL search parameter if present
+    let targetAlbumId = albumId;
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryId = urlParams.get('id') || urlParams.get('albumId');
+      if (queryId) targetAlbumId = queryId;
+    }
+
+    getAlbumDetails(targetAlbumId, titleParam || undefined)
       .then((data) => {
         if (isMounted) {
           setAlbum(data || STARTER_ALBUMS[0]);
@@ -56,7 +74,7 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
     return () => {
       isMounted = false;
     };
-  }, [albumId]);
+  }, [albumId, titleParam]);
 
   if (isLoading) {
     return (
@@ -92,29 +110,70 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
     }
   };
 
+  const isPlaylist =
+    album.artists?.toLowerCase().includes('curated') ||
+    album.artists?.toLowerCase().includes('playlist');
+
+  const handleBack = () => {
+    // 1. If explicit query parameter from search was passed
+    if (qParam || fromParam === 'search') {
+      const q = qParam || '';
+      const tab = tabParam || (isPlaylist ? 'charts' : 'albums');
+      router.push(`/search?q=${encodeURIComponent(q)}&tab=${encodeURIComponent(tab)}`);
+      return;
+    }
+
+    // 2. Check sessionStorage for the previously searched value
+    if (typeof window !== 'undefined') {
+      try {
+        const lastSearchRaw = sessionStorage.getItem('sangeetham_last_search');
+        if (lastSearchRaw) {
+          const lastSearch = JSON.parse(lastSearchRaw);
+          if (lastSearch?.query) {
+            router.push(`/search?q=${encodeURIComponent(lastSearch.query)}&tab=${encodeURIComponent(lastSearch.tab || 'albums')}`);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse last search:', e);
+      }
+    }
+
+    // 3. Fallback to router.back or search
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/search');
+    }
+  };
+
   const handleShareAlbum = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     openShareModal({
       title: album.title,
       subtitle: `${album.artists} • ${album.year || '2024'}`,
-      url: `${origin}/album?id=${album.id}`,
+      url: `${origin}/album?id=${album.id}&title=${encodeURIComponent(album.title)}`,
       image: album.cover,
       type: 'album'
     });
   };
 
-  const isPlaylist =
-    album.artists?.toLowerCase().includes('curated') ||
-    album.artists?.toLowerCase().includes('playlist');
+  const isFromSearch = fromParam === 'search' || Boolean(qParam);
 
   return (
     <div className="album-view-container">
       {/* Top Back Navigation Bar */}
       <div className="album-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/" className="album-back-btn" style={{ textDecoration: 'none' }}>
+        <button
+          onClick={handleBack}
+          className="album-back-btn"
+          title={isFromSearch ? 'Back to Search Results' : 'Back'}
+          aria-label="Back"
+          style={{ border: '1px solid var(--glass-border)', background: 'var(--bg-surface)' }}
+        >
           <ArrowLeft size={18} />
-          <span>Back to Home</span>
-        </Link>
+          <span>{isFromSearch ? 'Back to Search' : 'Back'}</span>
+        </button>
 
         <Link
           href={isPlaylist ? '/search?tab=charts' : '/search?tab=albums'}
@@ -130,8 +189,9 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
       <div className="album-hero-card">
         <div className="album-cover-glow" style={{ backgroundImage: `url(${album.cover})` }} />
 
-        <div className="album-cover-box">
+        <div className="album-cover-box" style={{ position: 'relative' }}>
           <img src={album.cover} alt={album.title} className="album-cover-img" />
+          <QualityBadge size="md" className="album-hero-quality-badge" />
         </div>
 
         <div className="album-meta-details">
@@ -206,7 +266,10 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
                   </div>
 
                   <div className="track-info-col">
-                    <span className="track-name-text">{song.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="track-name-text">{song.name}</span>
+                      <QualityBadge song={song} size="sm" />
+                    </div>
                     <span className="track-artist-text">{song.artist}</span>
                   </div>
 
@@ -216,6 +279,14 @@ export const AlbumView: React.FC<AlbumViewProps> = ({ albumId = 'alb_ala_vaikunt
                   </div>
 
                   <div className="track-fav-col" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className="share-btn-inline"
+                      onClick={() => openAddToPlaylistModal(song)}
+                      title="Add to Playlist"
+                    >
+                      <ListPlus size={16} />
+                    </button>
+
                     <button
                       className="share-btn-inline"
                       onClick={() => {

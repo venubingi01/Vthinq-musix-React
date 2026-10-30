@@ -141,7 +141,7 @@ export const SettingsView: React.FC = () => {
     setStreamQuality(newQ);
     try {
       localStorage.setItem('sangeetham_stream_quality', newQ);
-    } catch {}
+    } catch { }
     const label = newQ === '320' ? '320kbps Ultra HD 🔥' : newQ === '160' ? '160kbps High Quality' : '96kbps Data Saver';
     showToast(`Streaming quality set to ${label}`);
   };
@@ -368,41 +368,6 @@ export const SettingsView: React.FC = () => {
             </div>
             <ChevronRight size={18} className="card-chevron-icon" />
           </Link>
-
-          {/* 4. Audio Streaming Quality Preference */}
-          <div className="settings-quality-card">
-            <div className="quality-card-header">
-              <div className="quality-icon-label">
-                <Radio size={18} className="text-pink" />
-                <span className="quality-label-text">Audio Streaming Quality</span>
-              </div>
-              <span className="quality-badge">{streamQuality}kbps</span>
-            </div>
-            <div className="quality-pills-row">
-              <button
-                type="button"
-                className={`quality-pill ${streamQuality === '320' ? 'active' : ''}`}
-                onClick={() => handleQualityChange('320')}
-              >
-                <Sparkles size={14} />
-                <span>320kbps Ultra HD</span>
-              </button>
-              <button
-                type="button"
-                className={`quality-pill ${streamQuality === '160' ? 'active' : ''}`}
-                onClick={() => handleQualityChange('160')}
-              >
-                <span>160kbps High</span>
-              </button>
-              <button
-                type="button"
-                className={`quality-pill ${streamQuality === '96' ? 'active' : ''}`}
-                onClick={() => handleQualityChange('96')}
-              >
-                <span>96kbps Saver</span>
-              </button>
-            </div>
-          </div>
 
           {/* 5. Support & Funding Group */}
           <div className="funding-options-list">
