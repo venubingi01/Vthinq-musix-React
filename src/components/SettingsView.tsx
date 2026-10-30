@@ -235,11 +235,11 @@ export const SettingsView: React.FC = () => {
         <div className="settings-body">
           {/* 1. Developer Profile Card */}
           <a
-            href="https://www.linkedin.com/in/venu-bingi-bbb9689a"
+            href="https://www.instagram.com/venunani.b/"
             target="_blank"
             rel="noopener noreferrer"
             className="settings-card dev-profile-link-card"
-            title="View Venu Bingi on LinkedIn"
+            title="View Venu Bingi on Instagram"
           >
             <div className="dev-avatar-wrapper">
               <img
