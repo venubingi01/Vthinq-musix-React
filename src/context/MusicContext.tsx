@@ -163,9 +163,33 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Audio playback state
   const [currentSong, setCurrentSong] = useState<Song | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sangeetham_last_played_song');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.id) return parsed;
+        }
+      } catch (e) {
+        console.warn('Failed to parse last played song from storage:', e);
+      }
+    }
     return STARTER_SONGS[0];
   });
-  const [playlist, setPlaylist] = useState<Song[]>(STARTER_SONGS);
+  const [playlist, setPlaylist] = useState<Song[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sangeetham_current_playlist');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.warn('Failed to parse current playlist from storage:', e);
+      }
+    }
+    return STARTER_SONGS;
+  });
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -179,6 +203,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [lyrics, setLyrics] = useState<TimedLyric[]>([]);
   const [isLyricsLoading, setIsLyricsLoading] = useState<boolean>(false);
   const currentSongRef = useRef<Song | null>(STARTER_SONGS[0]);
+  const isStorageRestoredRef = useRef<boolean>(false);
 
   // Favorites stored in state with starter seed
   const [favorites, setFavorites] = useState<Song[]>([STARTER_SONGS[0], STARTER_SONGS[1]]);
@@ -457,6 +482,34 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (typeof parsed.subBass === 'number') setSubBassState(parsed.subBass);
         if (typeof parsed.radarAngle === 'number') setRadarAngle(parsed.radarAngle);
         if (typeof parsed.radarDist === 'number') setRadarDist(parsed.radarDist);
+      }
+
+      // Restore previously saved playlist
+      const savedPlaylist = localStorage.getItem('sangeetham_current_playlist');
+      if (savedPlaylist) {
+        try {
+          const parsedPl = JSON.parse(savedPlaylist);
+          if (Array.isArray(parsedPl) && parsedPl.length > 0) {
+            setPlaylist(parsedPl);
+          }
+        } catch (e) {
+          console.warn('Failed to parse saved playlist from storage:', e);
+        }
+      }
+
+      // Restore previously played song
+      const savedSong = localStorage.getItem('sangeetham_last_played_song');
+      if (savedSong) {
+        try {
+          const parsedSong = JSON.parse(savedSong);
+          if (parsedSong && parsedSong.id) {
+            setCurrentSong(parsedSong);
+            currentSongRef.current = parsedSong;
+            setDuration(parsedSong.duration || 0);
+          }
+        } catch (e) {
+          console.warn('Failed to parse last played song from storage:', e);
+        }
       }
     } catch {
       // ignore
@@ -883,6 +936,22 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     audio.preload = 'metadata';
     audio.crossOrigin = 'anonymous'; // required for Web Audio API context
     audio.volume = volume;
+
+    // Pre-arm audio element with stored or current song url so it is ready on app start
+    let initialUrl = currentSong?.url;
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('sangeetham_last_played_song');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.url) initialUrl = parsed.url;
+        }
+      } catch {}
+    }
+    if (initialUrl) {
+      audio.src = initialUrl;
+    }
+
     audioRef.current = audio;
 
     // Attach listeners
@@ -1006,6 +1075,13 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     if (newPlaylist && newPlaylist.length > 0) {
       setPlaylist(newPlaylist);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('sangeetham_current_playlist', JSON.stringify(newPlaylist));
+        } catch (e) {
+          console.warn('Failed to save playlist to storage:', e);
+        }
+      }
     }
 
     // Honor preferred streaming bitrate if song offers downloadUrls or alternate bitrates
@@ -1038,6 +1114,16 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     fallbackIndexRef.current = 0;
     setCurrentSong(songToPlay);
+    currentSongRef.current = songToPlay;
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('sangeetham_last_played_song', JSON.stringify(songToPlay));
+      } catch (e) {
+        console.warn('Failed to save last played song to storage:', e);
+      }
+    }
+
     setCurrentTime(0);
     setDuration(songToPlay.duration || 0);
     setLyrics([]);
@@ -1078,6 +1164,11 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     if (audioRef.current.paused) {
+      const activeUrl = currentSong?.url;
+      if (activeUrl && (!audioRef.current.src || !audioRef.current.src.includes(activeUrl))) {
+        audioRef.current.crossOrigin = 'anonymous';
+        audioRef.current.src = activeUrl;
+      }
       audioRef.current.play()
         .then(() => setIsPlaying(true))
         .catch((err) => {
@@ -1088,7 +1179,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audioRef.current.pause();
       setIsPlaying(false);
     }
-  }, [initWebAudio]);
+  }, [initWebAudio, currentSong?.url]);
 
   // Explicit Pause function (e.g. for voice commands, searches, and focus interruptions)
   const pauseSong = useCallback(() => {
@@ -1112,6 +1203,11 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     if (audioRef.current.paused) {
+      const activeUrl = currentSong?.url;
+      if (activeUrl && (!audioRef.current.src || !audioRef.current.src.includes(activeUrl))) {
+        audioRef.current.crossOrigin = 'anonymous';
+        audioRef.current.src = activeUrl;
+      }
       audioRef.current
         .play()
         .then(() => setIsPlaying(true))
@@ -1120,7 +1216,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setIsPlaying(false);
         });
     }
-  }, [initWebAudio]);
+  }, [initWebAudio, currentSong?.url]);
 
   // Seek audio position
   const seek = useCallback((seconds: number) => {

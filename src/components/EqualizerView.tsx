@@ -457,8 +457,9 @@ export const EqualizerView: React.FC<EqualizerViewProps> = ({
           className={`eq-studio-tab-btn ${activeTab === 'eq' ? 'active' : ''}`}
           onClick={() => setActiveTab('eq')}
         >
-          <Sliders size={18} />
-          <span>Equalizer & Preamp</span>
+          <Sliders size={16} />
+          <span className="eq-tab-label-full">Equalizer & Preamp</span>
+          <span className="eq-tab-label-short">Equalizer</span>
           {eqEnabled && <span className="eq-tab-badge">ON</span>}
         </button>
 
@@ -466,8 +467,9 @@ export const EqualizerView: React.FC<EqualizerViewProps> = ({
           className={`eq-studio-tab-btn ${activeTab === 'spatial' ? 'active' : ''}`}
           onClick={() => setActiveTab('spatial')}
         >
-          <Radio size={18} />
-          <span>3D Surround Spatial</span>
+          <Radio size={16} />
+          <span className="eq-tab-label-full">3D Surround Spatial</span>
+          <span className="eq-tab-label-short">3D Spatial</span>
           {spatialEnabled && <span className="eq-tab-badge spatial-badge">3D ON</span>}
         </button>
 
@@ -475,8 +477,9 @@ export const EqualizerView: React.FC<EqualizerViewProps> = ({
           className={`eq-studio-tab-btn ${activeTab === 'quality' ? 'active' : ''}`}
           onClick={() => setActiveTab('quality')}
         >
-          <Zap size={18} />
-          <span>Audio Quality</span>
+          <Zap size={16} />
+          <span className="eq-tab-label-full">Audio Quality</span>
+          <span className="eq-tab-label-short">Quality</span>
           <span className="eq-tab-badge quality-badge-tab">
             {streamQuality === '320' ? 'HD' : streamQuality === '160' ? 'HQ' : 'SD'}
           </span>

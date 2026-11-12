@@ -29,9 +29,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Let audio and external APIs bypass caching to avoid streaming issues
   const url = new URL(event.request.url);
+
+  // Bypass Next.js internal assets, Turbopack chunks, HMR, audio streams, and external APIs
   if (
+    url.pathname.startsWith('/_next') ||
+    url.pathname.includes('turbopack') ||
+    url.pathname.includes('webpack') ||
     url.hostname.includes('saavn') ||
     url.hostname.includes('youtube') ||
     url.hostname.includes('googlevideo') ||
@@ -49,7 +53,12 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         return caches.match(event.request).then((cached) => {
-          return cached || caches.match('/');
+          if (cached) return cached;
+          // CRITICAL: ONLY return index HTML for page navigations, NEVER for script or stylesheet requests!
+          if (event.request.mode === 'navigate') {
+            return caches.match('/');
+          }
+          return new Response(null, { status: 404, statusText: 'Not Found' });
         });
       })
   );

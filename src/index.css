@@ -8480,29 +8480,45 @@ input:checked+.toggle-slider:before {
    ========================================================================== */
 .eq-studio-tabs-bar {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-full);
-  padding: 5px;
+  padding: 4px;
   margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .eq-studio-tab-btn {
-  flex: 1;
+  flex: 1 1 0%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 11px 18px;
+  gap: 6px;
+  padding: 10px 14px;
   border-radius: var(--radius-full);
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.eq-studio-tab-btn svg {
+  flex-shrink: 0;
+}
+
+.eq-tab-label-full {
+  display: inline;
+}
+
+.eq-tab-label-short {
+  display: none;
 }
 
 .eq-studio-tab-btn:hover {
@@ -8524,6 +8540,7 @@ input:checked+.toggle-slider:before {
   background: rgba(0, 240, 255, 0.2);
   color: #00f0ff;
   border: 1px solid rgba(0, 240, 255, 0.4);
+  flex-shrink: 0;
 }
 
 .spatial-badge {
@@ -8536,6 +8553,88 @@ input:checked+.toggle-slider:before {
   background: rgba(255, 140, 0, 0.2);
   color: #ff8c00;
   border-color: rgba(255, 140, 0, 0.4);
+}
+
+/* Embedded Studio Tabs in modals / mobile */
+.equalizer-view-container.embedded .eq-studio-tabs-bar {
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 16px;
+}
+
+.equalizer-view-container.embedded .eq-studio-tab-btn {
+  padding: 8px 4px;
+  gap: 4px;
+  font-size: 0.78rem;
+}
+
+.equalizer-view-container.embedded .eq-studio-tab-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.equalizer-view-container.embedded .eq-tab-label-full {
+  display: none;
+}
+
+.equalizer-view-container.embedded .eq-tab-label-short {
+  display: inline;
+}
+
+.equalizer-view-container.embedded .eq-tab-badge {
+  font-size: 0.58rem;
+  padding: 1px 4px;
+}
+
+/* Mobile responsive tabs */
+@media (max-width: 768px), (max-width: 900px) and (max-height: 520px) {
+  .eq-studio-tabs-bar {
+    gap: 4px;
+    padding: 3px;
+    margin-bottom: 16px;
+  }
+
+  .eq-studio-tab-btn {
+    padding: 8px 4px;
+    gap: 4px;
+    font-size: 0.78rem;
+  }
+
+  .eq-studio-tab-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .eq-tab-label-full {
+    display: none;
+  }
+
+  .eq-tab-label-short {
+    display: inline;
+  }
+
+  .eq-tab-badge {
+    font-size: 0.58rem;
+    padding: 1px 4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .eq-studio-tabs-bar {
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .eq-studio-tab-btn {
+    padding: 6px 2px;
+    font-size: 0.72rem;
+    gap: 2px;
+  }
+
+  .eq-studio-tab-btn svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* Master Control Card */

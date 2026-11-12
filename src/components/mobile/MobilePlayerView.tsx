@@ -123,6 +123,106 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
   const [videoId, setVideoId] = useState<string | null>(null);
   const [isVideoLoading, setIsVideoLoading] = useState<boolean>(false);
+  // 3D Cube Swipe handling state
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const isDraggingRef = useRef<boolean>(false);
+  const isHorizontalSwipeRef = useRef<boolean | null>(null);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [cubeAnim, setCubeAnim] = useState<string>(''); // 'anim-next' | 'anim-prev' | ''
+
+  const CUBE_SIZE = 260;
+  const dragAngle = Math.max(-90, Math.min(90, (dragOffset / CUBE_SIZE) * 90));
+
+  const handleStart = (clientX: number, clientY: number) => {
+    if (cubeAnim) return;
+    touchStartX.current = clientX;
+    touchStartY.current = clientY;
+    isHorizontalSwipeRef.current = null;
+    isDraggingRef.current = true;
+  };
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (!isDraggingRef.current || touchStartX.current === null) return;
+    const deltaX = clientX - touchStartX.current;
+    const deltaY = touchStartY.current !== null ? clientY - touchStartY.current : 0;
+
+    if (isHorizontalSwipeRef.current === null) {
+      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+        isHorizontalSwipeRef.current = Math.abs(deltaX) > Math.abs(deltaY);
+      }
+    }
+
+    if (isHorizontalSwipeRef.current) {
+      setIsDragging(true);
+      const clamped = Math.max(-240, Math.min(240, deltaX));
+      setDragOffset(clamped);
+    }
+  };
+
+  const handleEnd = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    const threshold = 50;
+    if (dragOffset < -threshold) {
+      // Swiped Left -> Rotate cube to Next Song
+      setCubeAnim('anim-next');
+      setTimeout(() => {
+        nextSong();
+        setCubeAnim('');
+        setDragOffset(0);
+      }, 340);
+    } else if (dragOffset > threshold) {
+      // Swiped Right -> Rotate cube to Previous Song
+      setCubeAnim('anim-prev');
+      setTimeout(() => {
+        prevSong();
+        setCubeAnim('');
+        setDragOffset(0);
+      }, 340);
+    } else {
+      setDragOffset(0);
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+    isHorizontalSwipeRef.current = null;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    handleStart(e.touches[0].clientX, e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleMove(e.touches[0].clientX, e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    handleEnd();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleStart(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDraggingRef.current) {
+      handleMove(e.clientX, e.clientY);
+    }
+  };
+
+  const handleMouseUp = () => {
+    handleEnd();
+  };
+
+  const handleMouseLeave = () => {
+    if (isDraggingRef.current) {
+      handleEnd();
+    }
+  };
 
   // Auto-open fullscreen lyrics if navigated with lyrics tab
   useEffect(() => {
@@ -208,6 +308,21 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
 
 
   if (!currentSong) return null;
+
+  // Next & Previous song for the 3D Cube faces
+  const currentSongIndex = playlist.findIndex((s) => s.id === currentSong.id);
+  const prevSongItem: Song | null =
+    currentSongIndex > 0
+      ? playlist[currentSongIndex - 1]
+      : isLoop && playlist.length > 1
+      ? playlist[playlist.length - 1]
+      : null;
+  const nextSongItem: Song | null =
+    currentSongIndex >= 0 && currentSongIndex < playlist.length - 1
+      ? playlist[currentSongIndex + 1]
+      : isLoop && playlist.length > 1
+      ? playlist[0]
+      : null;
 
   const isFav = isFavorite(currentSong.id);
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -327,19 +442,91 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
           =================================================================== */}
       {activeTab === 'now-playing' && (
         <div className="mobile-nowplaying-card">
-          {/* Centered Large Album Art with glowing frame */}
-          <div className="mobile-artwork-container" style={{ position: 'relative' }}>
-            <img
-              src={currentSong.image}
-              alt={currentSong.name}
-              className="mobile-artwork-img"
-            />
-            <QualityBadge
-              song={currentSong}
-              quality={qualityPropValue}
-              size="md"
-              className="mobile-cover-quality-badge"
-            />
+          {/* Centered Large Album Art with 3D Cube / 3D Card Swipe Carousel */}
+          <div className="mobile-artwork-wrapper">
+            <div
+              className="mobile-cube-viewport"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div
+                className={`mobile-cube-flipper ${cubeAnim} ${isDragging ? 'is-dragging' : ''}`}
+                style={{
+                  transform: !cubeAnim
+                    ? `translateZ(calc(var(--cube-size) * -0.5)) rotateY(${dragAngle}deg)`
+                    : undefined
+                }}
+              >
+                {/* FRONT FACE: Current song */}
+                <div className="mobile-cube-face mobile-cube-face-front">
+                  <img
+                    src={currentSong.image}
+                    alt={currentSong.name}
+                    draggable={false}
+                  />
+                  <div
+                    className="mobile-cube-shade"
+                    style={{
+                      opacity: !cubeAnim
+                        ? Math.min(0.65, Math.abs(dragAngle) / 100)
+                        : cubeAnim ? 0.65 : 0
+                    }}
+                  />
+                  <QualityBadge
+                    song={currentSong}
+                    quality={qualityPropValue}
+                    size="md"
+                    className="mobile-cover-quality-badge"
+                  />
+                </div>
+
+                {/* RIGHT FACE: Next song */}
+                <div className="mobile-cube-face mobile-cube-face-right">
+                  <img
+                    src={nextSongItem?.image || currentSong.image}
+                    alt={nextSongItem?.name || 'Next track'}
+                    draggable={false}
+                  />
+                  <div
+                    className="mobile-cube-shade"
+                    style={{
+                      opacity: !cubeAnim
+                        ? (dragAngle < 0 ? Math.max(0, (90 + dragAngle) / 110) : 0.75)
+                        : cubeAnim === 'anim-next' ? 0 : 0.75
+                    }}
+                  />
+                </div>
+
+                {/* LEFT FACE: Previous song */}
+                <div className="mobile-cube-face mobile-cube-face-left">
+                  <img
+                    src={prevSongItem?.image || currentSong.image}
+                    alt={prevSongItem?.name || 'Previous track'}
+                    draggable={false}
+                  />
+                  <div
+                    className="mobile-cube-shade"
+                    style={{
+                      opacity: !cubeAnim
+                        ? (dragAngle > 0 ? Math.max(0, (90 - dragAngle) / 110) : 0.75)
+                        : cubeAnim === 'anim-prev' ? 0 : 0.75
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Subtle swipe indicator dots */}
+            <div className="mobile-swipe-indicators" aria-hidden="true">
+              <span className="mobile-swipe-dot" />
+              <span className="mobile-swipe-dot active" />
+              <span className="mobile-swipe-dot" />
+            </div>
           </div>
 
           {/* Track Details & Inline Heart */}

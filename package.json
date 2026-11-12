@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "npx serve out -p 3000",
     "test": "vitest run"
   },
   "dependencies": {

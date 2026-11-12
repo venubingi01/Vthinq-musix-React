@@ -12,16 +12,27 @@ export const PWAProvider: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // 1. Register Service Worker
+    // 1. Service Worker registration / cleanup
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((reg) => {
-          console.log('[PWA] Service Worker registered with scope:', reg.scope);
-        })
-        .catch((err) => {
-          console.warn('[PWA] Service Worker registration failed:', err);
+      if (process.env.NODE_ENV === 'production') {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((reg) => {
+            console.log('[PWA] Service Worker registered with scope:', reg.scope);
+          })
+          .catch((err) => {
+            console.warn('[PWA] Service Worker registration failed:', err);
+          });
+      } else {
+        // In development, automatically unregister any active service worker so it doesn't intercept Turbopack HMR / chunks
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            reg.unregister().then(() => {
+              console.log('[PWA] Dev mode: unregistered stale Service Worker');
+            });
+          }
         });
+      }
     }
 
     // 2. Global handler for PWA install prompt
