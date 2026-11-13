@@ -1238,6 +1238,7 @@
   pointer-events: none;
   border-radius: 22px;
   transition: opacity 1.7s linear;
+  display: none; 
 }
 
 /* Subtle swipe guide indicators */
