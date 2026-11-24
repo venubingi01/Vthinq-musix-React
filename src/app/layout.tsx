@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'Sangeetham AI Music Player',
     title: 'Sangeetham - AI Music Player',
-    description: 'Listen to your favorite songs in 320kbps HD with real-time synced lyrics, equalizer, and beat visualizer.',
+    description: 'Listen to your favorite songs in High Quality (HD) with real-time synced lyrics, equalizer, and beat visualizer.',
     images: [
       {
         url: '/icon-512.png',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Sangeetham - AI Music Player',
-    description: 'Listen to your favorite songs in 320kbps HD with real-time synced lyrics, equalizer, and beat visualizer.',
+    description: 'Listen to your favorite songs in High Quality (HD) with real-time synced lyrics, equalizer, and beat visualizer.',
     images: ['/icon-512.png']
   }
 };

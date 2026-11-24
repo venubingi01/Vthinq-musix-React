@@ -79,13 +79,14 @@ export const ShareModal: React.FC = () => {
     }
   };
 
-  // Social share intent URLs
-  const shareText = `Listen to "${title}" ${subtitle ? `by ${subtitle}` : ''} on Sangeetham AI Music Player! 🎶`;
+  const cleanSubtitle = subtitle ? subtitle.replace(/320\s*k?p?bps/gi, 'HD').trim() : '';
+  const cleanTitle = title.replace(/320\s*k?p?bps/gi, 'HD').trim();
+  const shareText = `Listen to "${cleanTitle}" ${cleanSubtitle ? `by ${cleanSubtitle} ` : ''}in High Quality (HD) on Sangeetham AI Music Player! 🎶`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText} ${url}`)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`;
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-  const emailUrl = `mailto:?subject=${encodeURIComponent(`${title} on Sangeetham`)}&body=${encodeURIComponent(`${shareText}\n\n${url}`)}`;
+  const emailUrl = `mailto:?subject=${encodeURIComponent(`${cleanTitle} in HD on Sangeetham`)}&body=${encodeURIComponent(`${shareText}\n\n${url}`)}`;
 
   const hasNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
@@ -157,8 +158,8 @@ export const ShareModal: React.FC = () => {
                 </>
               )}
             </span>
-            <h3 className="share-preview-title" title={title}>{title}</h3>
-            {subtitle && <p className="share-preview-subtitle" title={subtitle}>{subtitle}</p>}
+            <h3 className="share-preview-title" title={cleanTitle}>{cleanTitle}</h3>
+            {cleanSubtitle && <p className="share-preview-subtitle" title={cleanSubtitle}>{cleanSubtitle}</p>}
           </div>
         </div>
 

@@ -331,8 +331,10 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
     if (!currentSong) return;
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const shareUrl = `${origin}/player?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`;
-    const shareTitle = `${currentSong.name} - Sangeetham AI Music Player`;
-    const shareText = `Listen to "${currentSong.name}" by ${currentSong.artist} on Sangeetham AI Music Player! 🎶`;
+    const cleanName = currentSong.name.replace(/320\s*k?p?bps/gi, 'HD').trim();
+    const cleanArtist = currentSong.artist.replace(/320\s*k?p?bps/gi, 'HD').trim();
+    const shareTitle = `${cleanName} (HD) - Sangeetham AI Music Player`;
+    const shareText = `Listen to "${cleanName}" by ${cleanArtist} in High Quality (HD) on Sangeetham AI Music Player! 🎶`;
 
     // Try native share sheet with the song cover image file on mobile devices (iOS Safari, Android Chrome)
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
