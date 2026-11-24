@@ -183,7 +183,7 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
     }
   };
 
-  const isPendingDeepLink = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('songId'));
+  const isPendingDeepLink = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('songId') || new URLSearchParams(window.location.search).get('song'));
 
   if (!currentSong) {
     if (isPendingDeepLink) {
@@ -213,7 +213,7 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
     openShareModal({
       title: currentSong.name,
       subtitle: `${currentSong.artist} • ${currentSong.album}`,
-      url: `${origin}/lyrics?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`,
+      url: `${origin}/player?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`,
       image: currentSong.image,
       type: 'song'
     });
@@ -225,7 +225,7 @@ export const PlayerView: React.FC<PlayerViewProps> = ({ initialMobileTab = 'now-
     openShareModal({
       title: `${currentSong.name} (Live Lyrics)`,
       subtitle: `${currentSong.artist} • Synced Karaoke`,
-      url: `${origin}/lyrics?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`,
+      url: `${origin}/player?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`,
       image: currentSong.image,
       type: 'lyrics'
     });

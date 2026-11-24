@@ -10,7 +10,7 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('songId')) {
+      if (params.get('songId') || params.get('song')) {
         router.replace(`/player?${params.toString()}`);
       }
     }

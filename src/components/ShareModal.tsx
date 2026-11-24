@@ -33,14 +33,41 @@ export const ShareModal: React.FC = () => {
     }
   };
 
+  const fetchImageFile = async (imageUrl: string, fileName: string): Promise<File | null> => {
+    try {
+      const res = await fetch(imageUrl);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      const ext = blob.type.includes('png') ? 'png' : 'jpg';
+      return new File([blob], `${fileName.replace(/[^a-zA-Z0-9]/g, '_')}.${ext}`, {
+        type: blob.type || 'image/jpeg'
+      });
+    } catch {
+      return null;
+    }
+  };
+
   const handleNativeShare = async () => {
-    if (typeof navigator !== 'undefined' && navigator.share) {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        await navigator.share({
-          title: `${title} - Sangeetham AI Music Player`,
-          text: `Listen to "${title}" on Sangeetham AI Music Player!`,
-          url: url
-        });
+        let file: File | null = null;
+        if (image) {
+          file = await fetchImageFile(image, title);
+        }
+
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `${title} - Sangeetham AI Music Player`,
+            text: `${shareText}\n${url}`
+          });
+        } else {
+          await navigator.share({
+            title: `${title} - Sangeetham AI Music Player`,
+            text: shareText,
+            url: url
+          });
+        }
         closeShareModal();
       } catch (err: any) {
         if (err.name !== 'AbortError') {
@@ -61,6 +88,27 @@ export const ShareModal: React.FC = () => {
   const emailUrl = `mailto:?subject=${encodeURIComponent(`${title} on Sangeetham`)}&body=${encodeURIComponent(`${shareText}\n\n${url}`)}`;
 
   const hasNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
+  const handleWhatsAppClick = async (e: React.MouseEvent) => {
+    // On mobile devices, share the actual image file to WhatsApp so the album artwork appears in full resolution
+    if (image && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        const file = await fetchImageFile(image, title);
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          e.preventDefault();
+          await navigator.share({
+            files: [file],
+            title: `${title} - Sangeetham`,
+            text: `${shareText}\n${url}`
+          });
+          closeShareModal();
+          return;
+        }
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+  };
 
   return (
     <div className="share-modal-backdrop" onClick={closeShareModal}>
@@ -159,6 +207,7 @@ export const ShareModal: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="social-btn whatsapp-btn"
+              onClick={handleWhatsAppClick}
               title="Share on WhatsApp"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

@@ -1472,15 +1472,16 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const songId = urlParams.get('songId');
       const songTitle = urlParams.get('song');
 
-      if (songId) {
-        // Guarantee user is on the Lyrics View
+      if (songId || songTitle) {
+        // Guarantee user is on the Player View
         const currentPath = window.location.pathname.replace(/\/$/, '');
         if (currentPath !== '/player') {
-          router.push(`/player?${urlParams.toString()}`);
+          router.replace(`/player?${urlParams.toString()}`);
         }
 
         import('../services/sangeethamApi').then(({ getSongById, searchSongs }) => {
-          getSongById(songId).then((found) => {
+          const fetchPromise = songId ? getSongById(songId) : Promise.resolve(null);
+          fetchPromise.then((found) => {
             if (found) {
               playSong(found);
               showToast(`🎶 Playing: ${found.name}`);

@@ -13,6 +13,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://sangeetham-ai.onrender.com'),
   title: 'Sangeetham - AI Music Player',
   description: 'Sangeetham - AI Music Player with real-time synced lyrics, equalizer, and beat visualizer',
   manifest: '/manifest.json',
@@ -27,7 +28,28 @@ export const metadata: Metadata = {
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512.png', sizes: '512x512', type: 'image/png' }
     ],
-    apple: '/icon-192.png'
+    apple: '/icon-512.png'
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Sangeetham AI Music Player',
+    title: 'Sangeetham - AI Music Player',
+    description: 'Listen to your favorite songs in 320kbps HD with real-time synced lyrics, equalizer, and beat visualizer.',
+    images: [
+      {
+        url: '/icon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'Sangeetham AI Music Player',
+        type: 'image/png'
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Sangeetham - AI Music Player',
+    description: 'Listen to your favorite songs in 320kbps HD with real-time synced lyrics, equalizer, and beat visualizer.',
+    images: ['/icon-512.png']
   }
 };
 

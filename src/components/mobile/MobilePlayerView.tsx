@@ -334,15 +334,40 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
     const shareTitle = `${currentSong.name} - Sangeetham AI Music Player`;
     const shareText = `Listen to "${currentSong.name}" by ${currentSong.artist} on Sangeetham AI Music Player! 🎶`;
 
-    // Try native share sheet on mobile devices (iOS Safari, Android Chrome)
+    // Try native share sheet with the song cover image file on mobile devices (iOS Safari, Android Chrome)
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
+        let file: File | null = null;
+        if (currentSong.image) {
+          try {
+            const res = await fetch(currentSong.image);
+            if (res.ok) {
+              const blob = await res.blob();
+              const ext = blob.type.includes('png') ? 'png' : 'jpg';
+              file = new File([blob], `${currentSong.name.replace(/[^a-zA-Z0-9]/g, '_')}.${ext}`, {
+                type: blob.type || 'image/jpeg'
+              });
+            }
+          } catch {
+            // fallback without file
+          }
+        }
+
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: shareTitle,
+            text: `${shareText}\n${shareUrl}`
+          });
+          return;
+        } else {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+            url: shareUrl
+          });
+          return;
+        }
       } catch (err: any) {
         if (err?.name === 'AbortError') {
           return;
