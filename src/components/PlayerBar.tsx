@@ -147,6 +147,26 @@ export const PlayerBar: React.FC = () => {
             >
               <ListPlus size={17} />
             </button>
+
+            <button
+              className="fav-btn-inline"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                openShareModal({
+                  title: currentSong.name,
+                  subtitle: `${currentSong.artist} • ${currentSong.album}`,
+                  url: `${origin}/player?songId=${currentSong.id}&song=${encodeURIComponent(currentSong.name)}`,
+                  image: currentSong.image,
+                  type: 'song'
+                });
+              }}
+              title="Share Track"
+              aria-label="Share Track"
+            >
+              <Share2 size={17} />
+            </button>
           </Link>
 
           {/* Center Playback Controls */}

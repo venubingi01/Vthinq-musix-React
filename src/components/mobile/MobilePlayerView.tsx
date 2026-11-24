@@ -315,14 +315,14 @@ export const MobilePlayerView: React.FC<MobilePlayerViewProps> = ({
     currentSongIndex > 0
       ? playlist[currentSongIndex - 1]
       : isLoop && playlist.length > 1
-      ? playlist[playlist.length - 1]
-      : null;
+        ? playlist[playlist.length - 1]
+        : null;
   const nextSongItem: Song | null =
     currentSongIndex >= 0 && currentSongIndex < playlist.length - 1
       ? playlist[currentSongIndex + 1]
       : isLoop && playlist.length > 1
-      ? playlist[0]
-      : null;
+        ? playlist[0]
+        : null;
 
   const isFav = isFavorite(currentSong.id);
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;

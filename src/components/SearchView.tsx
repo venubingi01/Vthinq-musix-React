@@ -334,8 +334,8 @@ export const SearchView: React.FC = () => {
       searchCategory === 'albums'
         ? albumsResults.length
         : searchCategory === 'songs'
-        ? songsResults.length
-        : playlistsResults.length;
+          ? songsResults.length
+          : playlistsResults.length;
 
     if (count === 0) return null;
 
@@ -396,8 +396,8 @@ export const SearchView: React.FC = () => {
               searchCategory === 'albums'
                 ? 'Search albums (e.g. Ala Vaikunthapurramuloo, Jawan, Pushpa, Animal)...'
                 : searchCategory === 'songs'
-                ? 'Search songs or artist name...'
-                : 'Search charts or curated playlists...'
+                  ? 'Search songs or artist name...'
+                  : 'Search charts or curated playlists...'
             }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -513,8 +513,8 @@ export const SearchView: React.FC = () => {
               {searchCategory === 'albums'
                 ? 'Searching full albums...'
                 : searchCategory === 'songs'
-                ? 'Searching song tracks...'
-                : 'Searching charts & curated playlists...'}
+                  ? 'Searching song tracks...'
+                  : 'Searching charts & curated playlists...'}
             </p>
           </div>
         )}
@@ -725,8 +725,8 @@ export const SearchView: React.FC = () => {
                   {searchTerm.trim()
                     ? `Playlist & Chart Results for "${searchTerm}"`
                     : selectedChartChip
-                    ? `Curated Playlists for "${selectedChartChip}"`
-                    : 'Featured Charts & Curated Playlists (Click to View Album)'}
+                      ? `Curated Playlists for "${selectedChartChip}"`
+                      : 'Featured Charts & Curated Playlists (Click to View Album)'}
                 </span>
               </h2>
               <span className="search-section-count">{playlistsResults.length} Playlists</span>

@@ -946,7 +946,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const parsed = JSON.parse(saved);
           if (parsed?.url) initialUrl = parsed.url;
         }
-      } catch {}
+      } catch { }
     }
     if (initialUrl) {
       audio.src = initialUrl;
@@ -982,7 +982,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const fallbackUrl = currentSong.fallbackUrls[fallbackIndexRef.current++];
         console.warn('Audio playback error, attempting fallback URL if present...');
         audio.src = fallbackUrl;
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
         return;
       }
 
@@ -992,7 +992,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audio.removeAttribute('crossOrigin');
         if (currentSong?.url) {
           audio.src = currentSong.url;
-          audio.play().catch(() => {});
+          audio.play().catch(() => { });
         }
       }
     };
@@ -1050,7 +1050,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const onEnded = () => {
       if (isLoop) {
         audio.currentTime = 0;
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
       } else {
         nextSong();
       }
@@ -1067,7 +1067,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       initWebAudio();
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume().catch(() => {});
+        audioContextRef.current.resume().catch(() => { });
       }
     } catch {
       // AudioContext state note
@@ -1157,7 +1157,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       initWebAudio();
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume().catch(() => {});
+        audioContextRef.current.resume().catch(() => { });
       }
     } catch {
       // AudioContext resume catch
@@ -1196,7 +1196,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       initWebAudio();
       if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume().catch(() => {});
+        audioContextRef.current.resume().catch(() => { });
       }
     } catch {
       // AudioContext resume catch
@@ -1413,8 +1413,8 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       quality === '320'
         ? '320kbps Ultra HD Studio Quality 🔥'
         : quality === '160'
-        ? '160kbps High Quality Audio 🎧'
-        : 'Standard Data Saver Quality (96kbps) 📱';
+          ? '160kbps High Quality Audio 🎧'
+          : 'Standard Data Saver Quality (96kbps) 📱';
     showToast(`Streaming quality set to ${qLabel}`);
 
     // If currently playing, seamlessly switch audio stream without losing track position
@@ -1458,7 +1458,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audio.src = targetUrl;
         audio.currentTime = prevTime;
         if (wasPlaying) {
-          audio.play().catch(() => {});
+          audio.play().catch(() => { });
         }
       }
     }
@@ -1473,16 +1473,22 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const songTitle = urlParams.get('song');
 
       if (songId) {
+        // Guarantee user is on the Lyrics View
+        const currentPath = window.location.pathname.replace(/\/$/, '');
+        if (currentPath !== '/player') {
+          router.push(`/player?${urlParams.toString()}`);
+        }
+
         import('../services/sangeethamApi').then(({ getSongById, searchSongs }) => {
           getSongById(songId).then((found) => {
             if (found) {
               playSong(found);
-              showToast(`🎶 Ready to play: ${found.name}`);
+              showToast(`🎶 Playing: ${found.name}`);
             } else if (songTitle) {
               searchSongs(songTitle, 1, 3).then((res) => {
                 if (res && res.length > 0) {
                   playSong(res[0]);
-                  showToast(`🎶 Ready to play: ${res[0].name}`);
+                  showToast(`🎶 Playing: ${res[0].name}`);
                 }
               });
             }
@@ -1492,7 +1498,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (e) {
       console.warn('Deep-link check error:', e);
     }
-  }, [playSong, showToast]);
+  }, [playSong, showToast, router]);
 
   return (
     <MusicContext.Provider
